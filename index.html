@@ -280,7 +280,7 @@
       return tpl.replace(/\{\{(.*?)\}\}/g, (_, key) => (ctx[key.trim()] ?? '')); 
     }
     function defaultTemplate(){
-      return `Olá, {{nome}}! Sua visita está prevista para {{hora}} (~{{minutos}}).\n`+
+      return `Olá, {{nome}}! Sua visita está prevista para {{hora}} ({{minutos}}).\n`+
              `Serviço: {{servico}} {{os}}. Técnico: {{tecnico}}.\n`+
              `Se precisar reagendar, pode responder por aqui.`;
     }
@@ -676,3 +676,4 @@
 </body>
 
 </html>
+

@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aviso ao Cliente Smart Conecta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .nowrap{white-space:nowrap}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    textarea{resize:vertical}
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    }
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    .btn-secondary {
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .status-chip {
+      transition: all 0.2s ease;
+    }
+    .status-chip:hover {
+      transform: scale(1.05);
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body class="gradient-bg text-gray-900 min-h-screen">
+  <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+    <!-- Header -->
+    <header class="flex items-center justify-between gap-4 flex-wrap bg-white rounded-2xl card-shadow p-5 sticky-header">
+      <div class="flex items-center gap-3">
+        <div class="bg-emerald-100 p-2 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.262-6.189-3.553-8.436" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Notificação ao Cleinte</h1>
+          <p class="text-sm text-gray-600">Esta versão <b>sempre</b> abre no <b>WhatsApp Web</b> (web.whatsapp.com) com o texto preenchido.</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button id="btnImport" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+          </svg>
+          Importar CSV
+        </button>
+        <button id="btnExport" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Exportar CSV
+        </button>
+        <button id="btnLimparLista" class="rounded-xl border border-red-300 px-4 py-2.5 bg-white hover:bg-red-50 text-red-600 font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Limpar lista
+        </button>
+      </div>
+      <input id="fileCSV" type="file" accept=".csv,text/csv" class="hidden" />
+    </header>
+
+    <!-- Configuração de Templates -->
+    <section class="bg-white rounded-2xl card-shadow p-6 space-y-5 fade-in">
+      <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Configuração de Templates
+      </h2>
+      <div class="flex items-start gap-4 flex-wrap">
+        <div class="grow">
+          <label class="block text-sm font-medium mb-2 text-gray-700" for="template">Modelo de mensagem (placeholders)</label>
+          <textarea id="template" rows="5" class="w-full rounded-xl border border-gray-300 px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
+          <p class="text-xs text-gray-500 mt-2">Placeholders: <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{nome}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{telefone}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{hora}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{minutos}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{servico}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{os}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{tecnico}}</span>.</p>
+        </div>
+        <div class="flex flex-col gap-2 shrink-0">
+          <button id="btnSalvarTPL" class="btn-primary rounded-xl px-4 py-2.5 text-white font-medium flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Salvar padrão
+          </button>
+          <button id="btnResetTPL" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Restaurar padrão
+          </button>
+        </div>
+      </div>
+      <div class="flex items-start gap-4 flex-wrap">
+        <div class="grow">
+          <label class="block text-sm font-medium mb-2 text-gray-700" for="templateEnc">Modelo de <b>encerramento</b></label>
+          <textarea id="templateEnc" rows="4" class="w-full rounded-xl border border-gray-300 px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
+          <p class="text-xs text-gray-500 mt-2">Ex.: <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">Seu chamado foi finalizado. Seguem as fotos do serviço. Qualquer dúvida, estou à disposição.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Form para adicionar linhas -->
+    <section class="bg-white rounded-2xl card-shadow p-6 space-y-5 fade-in">
+      <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Adicionar à lista
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+        <div>
+          <label for="nome" class="block text-sm font-medium mb-2 text-gray-700">Nome</label>
+          <input id="nome" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Ex.: Maria Souza" />
+        </div>
+        <div>
+          <label for="telefone" class="block text-sm font-medium mb-2 text-gray-700">Telefone (WhatsApp)</label>
+          <input id="telefone" type="tel" inputmode="numeric" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="11980195451" />
+          <p class="text-xs text-gray-500 mt-1">Somente números. Ex.: 11980195451</p>
+        </div>
+        <div>
+          <label for="eta" class="block text-sm font-medium mb-2 text-gray-700">Tempo previsto</label>
+          <input id="eta" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="45m ou 16:30" />
+          <p class="text-xs text-gray-500 mt-1">Aceita <b>minutos</b> (45m) ou <b>horário</b> (16:30).</p>
+        </div>
+        <div>
+          <label for="servico" class="block text-sm font-medium mb-2 text-gray-700">Serviço (opcional)</label>
+          <input id="servico" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Manutenção impressora" />
+        </div>
+        <div>
+          <label for="os" class="block text-sm font-medium mb-2 text-gray-700">OS (opcional)</label>
+          <input id="os" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="28832" />
+        </div>
+        <div>
+          <label for="tecnico" class="block text-sm font-medium mb-2 text-gray-700">Técnico (opcional)</label>
+          <input id="tecnico" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Leandro" />
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button id="btnAdd" class="btn-primary rounded-xl px-5 py-2.5 text-white font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Adicionar à lista
+        </button>
+        <button id="btnAddEEnviar" class="btn-secondary rounded-xl border border-gray-300 px-5 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          Adicionar e abrir WhatsApp
+        </button>
+      </div>
+    </section>
+
+    <!-- Lista de envios -->
+    <section class="bg-white rounded-2xl card-shadow p-6 fade-in">
+      <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+        <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Lista de envios
+        </h2>
+        <div class="flex items-center gap-2 flex-wrap ml-auto">
+          <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input id="busca" type="text" class="rounded-xl border border-gray-300 pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Buscar por nome ou telefone" />
+          </div>
+          <select id="filtroStatus" class="rounded-xl border border-gray-300 px-4 py-2.5 bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+            <option value="todos">Todos</option>
+            <option value="falta-retorno">Falta retorno</option>
+            <option value="com-envio">Com envio</option>
+            <option value="encerrados">Encerrados</option>
+          </select>
+          <span id="resumo" class="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg font-medium">0 itens</span>
+        </div>
+        <div class="flex gap-2 w-full md:w-auto">
+          <button id="btnEnviarTodos" class="btn-primary rounded-xl px-4 py-2.5 text-white font-medium flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+            Enviar todos (abre abas)
+          </button>
+        </div>
+      </div>
+      <div class="mt-4 overflow-x-auto relative rounded-xl border border-gray-200">
+        <table class="min-w-full text-sm table-auto">
+          <thead>
+            <tr class="bg-gray-50 text-gray-700 border-b border-gray-200">
+              <th class="p-3 text-left font-semibold">Nome</th>
+              <th class="p-3 text-left font-semibold">Telefone</th>
+              <th class="p-3 text-left font-semibold">Previsto</th>
+              <th class="p-3 text-left font-semibold">Serviço</th>
+              <th class="p-3 text-left font-semibold">OS</th>
+              <th class="p-3 text-left font-semibold">Técnico</th>
+              <th class="p-3 text-left font-semibold">Status</th>
+              <th class="p-3 text-left font-semibold">Mensagem (editável)</th>
+              <th class="p-3 text-left nowrap sticky right-0 bg-gray-50 z-10 font-semibold">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody" class="align-top"></tbody>
+        </table>
+      </div>
+      <p class="text-xs text-gray-500 mt-4">Abriremos sempre via <b>web.whatsapp.com</b>. Deixe sua sessão do WhatsApp Web ativa/logada. Obs.: como o navegador não sabe se a mensagem foi realmente enviada, marcamos o status quando a janela do WhatsApp é aberta.</p>
+    </section>
+
+    <footer class="text-center text-xs text-gray-500 py-4">Sem servidor. Para envio 100% automático (sem confirmação) ou <b>com fotos</b>, use WhatsApp Cloud API + backend.</footer>
+  </main>
+
+  <script>
+    // ========= Utils =========
+    const el = (id) => document.getElementById(id);
+    const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
+    const BR_PREFIX = '55';
+
+    function ensureBR(msisdn){
+      let d = onlyDigits(msisdn).replace(/^0+/, '');
+      return d.startsWith(BR_PREFIX) ? d : (BR_PREFIX + d);
+    }
+    function toHHMM(date){
+      const d = new Date(date);
+      return d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', hour12:false});
+    }
+    function parseETA(raw){
+      const t = (raw || '').trim();
+      if(!t) return {hora:'', minutos:''};
+      if(/\d{1,2}:\d{2}/.test(t)){
+        const [h, m] = t.split(':').map(Number);
+        const now = new Date();
+        const est = new Date(now);
+        est.setHours(h, m, 0, 0);
+        if(est < now) est.setDate(est.getDate() + 1);
+        const diff = Math.max(0, Math.round((est - now)/60000));
+        return {hora: toHHMM(est), minutos: `${diff}min`};
+      }
+      const m = parseInt(t, 10);
+      if(Number.isFinite(m)){
+        const est = new Date(Date.now() + m*60000);
+        return {hora: toHHMM(est), minutos: `${m}min`};
+      }
+      return {hora:'', minutos:''};
+    }
+    function renderTemplate(tpl, ctx){
+      return tpl.replace(/\{\{(.*?)\}\}/g, (_, key) => (ctx[key.trim()] ?? '')); 
+    }
+    function defaultTemplate(){
+      return `Olá, {{nome}}! Sua visita está prevista para {{hora}} (~{{minutos}}).\n`+
+             `Serviço: {{servico}} {{os}}. Técnico: {{tecnico}}.\n`+
+             `Se precisar reagendar, pode responder por aqui.`;
+    }
+    function defaultEncTemplate(){
+      return `Seu chamado foi executado. Caso precise de suporte, este é o número do nosso atendimento https://wa.me/5511994450724. Estamos prontos para ajudar você. Qualquer dúvida, fico à disposição.`;
+    }
+
+    // ========= Estado =========
+    let LIST = []; // {id, nome, telefone, etaRaw, servico, os, tecnico, msg?, sentNotifyAt?, sentCloseAt?}
+    let FILTER_TEXT = '';
+    let FILTER_STATUS = 'todos';
+
+    function save(){
+      localStorage.setItem('lista_envio_whats_webonly', JSON.stringify(LIST));
+      localStorage.setItem('tpl_envio_whats_webonly', el('template').value);
+      localStorage.setItem('tpl_enc_whats_webonly', el('templateEnc').value);
+    }
+    function load(){
+      try { LIST = JSON.parse(localStorage.getItem('lista_envio_whats_webonly')||'[]') || []; } catch{ LIST = []; }
+      el('template').value = localStorage.getItem('tpl_envio_whats_webonly') || defaultTemplate();
+      el('templateEnc').value = localStorage.getItem('tpl_enc_whats_webonly') || defaultEncTemplate();
+      render();
+    }
+
+    // ========= Busca & Filtro =========
+    function norm(s){
+      return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    }
+    function matchRow(row){
+      const t = norm(FILTER_TEXT);
+      if(!t) return true;
+      const nameOk = norm(row.nome).includes(t);
+      const telOk  = onlyDigits(row.telefone).includes(onlyDigits(FILTER_TEXT));
+      return nameOk || telOk;
+    }
+    function matchStatus(row){
+      const hasEnvio = !!row.sentNotifyAt;
+      const hasRetorno = !!row.sentCloseAt;
+      if(FILTER_STATUS === 'todos') return true;
+      if(FILTER_STATUS === 'com-envio') return hasEnvio;
+      if(FILTER_STATUS === 'encerrados') return hasRetorno;
+      if(FILTER_STATUS === 'falta-retorno') return hasEnvio && !hasRetorno;
+      return true;
+    }
+
+    // ========= Render =========
+    function maskPhone(v){
+      const d = onlyDigits(v);
+      if(d.startsWith('55') && d.length >= 13){
+        const pais = d.slice(0,2), ddd = d.slice(2,4), pre = d.slice(4,9), suf = d.slice(9,13);
+        return `+${pais} (${ddd}) ${pre}-${suf}`;
+      }
+      if(d.length >= 10){
+        const ddd = d.slice(0,2), pre = d.slice(2,7), suf = d.slice(7,11);
+        return `(${ddd}) ${pre}-${suf}`;
+      }
+      return d;
+    }
+    function escapeHtml(s){
+      return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    }
+    function fromNow(ts){
+      if(!ts) return '';
+      const diff = Date.now() - ts;
+      const m = Math.floor(diff/60000);
+      if(m < 1) return 'agora';
+      if(m < 60) return `há ${m} min`;
+      const h = Math.floor(m/60);
+      if(h < 24) return `há ${h} h`;
+      const d = Math.floor(h/24);
+      return `há ${d} d`;
+    }
+    function statusChips(row){
+      const envio = row.sentNotifyAt ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 status-chip">Envio ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentNotifyAt)}</span></span>`
+                                     : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip">Envio pendente</span>`;
+      const retorno = row.sentCloseAt ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 status-chip">Retorno ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentCloseAt)}</span></span>`
+                                      : (row.sentNotifyAt ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200 status-chip">Retorno pendente</span>`
+                                                         : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip">Retorno —</span>`);
+      return `<div class="flex flex-wrap gap-1">${envio}${retorno}</div>`;
+    }
+
+    function render(){
+      const tbody = el('tbody');
+      tbody.innerHTML = '';
+      const tpl = el('template').value;
+
+      const filtered = LIST.filter(r => matchRow(r) && matchStatus(r));
+      el('resumo').textContent = `${filtered.length} de ${LIST.length} itens`;
+
+      filtered.forEach((row) => {
+        const {hora, minutos} = parseETA(row.etaRaw);
+        const ctx = { nome: row.nome, telefone: row.telefone, hora, minutos, servico: row.servico||'', os: row.os||'', tecnico: row.tecnico||'' };
+        const msgDefault = renderTemplate(tpl, ctx).trim();
+        const msg = (typeof row.msg === 'string' ? row.msg : msgDefault).trim();
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150';
+        tr.innerHTML = `
+          <td class="p-3 align-top font-medium">${escapeHtml(row.nome)}</td>
+          <td class="p-3 align-top mono">${escapeHtml(maskPhone(row.telefone))}</td>
+          <td class="p-3 align-top">${hora ? `<span class='font-medium'>${hora}</span> <span class='text-gray-500 text-xs'>(${minutos})</span>` : '<span class="text-red-500 text-xs">ETA inválido</span>'}</td>
+          <td class="p-3 align-top">${escapeHtml(row.servico||'')}</td>
+          <td class="p-3 align-top">${escapeHtml(row.os||'')}</td>
+          <td class="p-3 align-top">${escapeHtml(row.tecnico||'')}</td>
+          <td class="p-3 align-top">${statusChips(row)}</td>
+          <td class="p-3 align-top mono text-gray-700">
+            <textarea rows="5" class="w-full max-w-full rounded-lg border border-gray-300 p-3 break-words focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" data-act="edit-msg" data-id="${row.id}">${escapeHtml(msg)}</textarea>
+            <div class="flex gap-2 mt-2">
+              <button class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs bg-white hover:bg-gray-50 transition-colors duration-150 flex items-center gap-1" data-act="regen" data-id="${row.id}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Recriar pelo template
+              </button>
+            </div>
+          </td>
+          <td class="p-3 align-top sticky right-0 bg-white z-10">
+            <div class="flex flex-col gap-2">
+              <button class="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-150 flex items-center justify-center gap-1" data-act="send" data-id="${row.id}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+                Enviar
+              </button>
+              <button class="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-150 flex items-center justify-center gap-1" data-act="close" data-id="${row.id}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Encerrar
+              </button>
+              <button class="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors duration-150 flex items-center justify-center gap-1" data-act="copy" data-id="${row.id}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Copiar
+              </button>
+              <button class="px-3 py-2 rounded-lg border border-red-300 text-red-600 bg-white hover:bg-red-50 transition-colors duration-150 flex items-center justify-center gap-1" data-act="del" data-id="${row.id}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Remover
+              </button>
+            </div>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ========= WhatsApp Web (forçado) =========
+    function buildWAUrl(numero, msg){
+      const enc = encodeURIComponent((msg && msg.trim()) ? msg : ' ');
+      return `https://web.whatsapp.com/send?phone=${numero}&text=${enc}`;
+    }
+    function openURL(url){
+      const w = window.open(url, '_blank');
+      if(!w){ window.location.href = url; }
+    }
+
+    // ========= Mensagens =========
+    function getRowMessage(row){
+      const {hora, minutos} = parseETA(row.etaRaw);
+      const tpl = el('template').value;
+      const fallback = renderTemplate(tpl, { nome: row.nome, telefone: row.telefone, hora, minutos, servico: row.servico||'', os: row.os||'', tecnico: row.tecnico||'' }).trim();
+      const msg = (typeof row.msg === 'string' ? row.msg.trim() : fallback);
+      return msg || fallback;
+    }
+    function getCloseMessage(row){
+      const tpl = el('templateEnc').value || defaultEncTemplate();
+      const {hora, minutos} = parseETA(row.etaRaw);
+      return renderTemplate(tpl, { nome: row.nome, telefone: row.telefone, hora, minutos, servico: row.servico||'', os: row.os||'', tecnico: row.tecnico||'' }).trim();
+    }
+
+    function openWANotify(row){
+      const msg = getRowMessage(row);
+      const numero = ensureBR(row.telefone);
+      const url = buildWAUrl(numero, msg);
+      openURL(url);
+      row.sentNotifyAt = Date.now();
+      save();
+      render();
+    }
+    function openWAClose(row){
+      const msg = getCloseMessage(row) || defaultEncTemplate();
+      const numero = ensureBR(row.telefone);
+      const url = buildWAUrl(numero, msg);
+      openURL(url);
+      row.sentCloseAt = Date.now();
+      save();
+      render();
+    }
+
+    // ========= Ações =========
+    function addRow(openAfter=false){
+      const nome = el('nome').value.trim();
+      let telefone = ensureBR(el('telefone').value);
+      const etaRaw = el('eta').value.trim();
+      const servico = el('servico').value.trim();
+      const os = el('os').value.trim();
+      const tecnico = el('tecnico').value.trim();
+
+      if(!nome) return alert('Informe o nome.');
+      const tel = onlyDigits(telefone);
+      if(!tel || tel.length < 10) return alert('Telefone inválido. Use DDD + número.');
+      const {hora} = parseETA(etaRaw);
+      if(!hora) return alert('Tempo previsto inválido. Use 45m ou 16:30.');
+
+      const {minutos} = parseETA(etaRaw);
+      const msg = renderTemplate(el('template').value, { nome, telefone, hora, minutos, servico, os, tecnico }).trim();
+
+      const row = { id: crypto.randomUUID(), nome, telefone, etaRaw, servico, os, tecnico, msg };
+      LIST.unshift(row);
+      save();
+      render();
+      ['nome','telefone','eta','servico','os','tecnico'].forEach(id=> el(id).value='');
+      if(openAfter){ openWANotify(row); }
+    }
+
+    function copyMsg(row){
+      const msg = getRowMessage(row);
+      if(!msg) return alert('Mensagem vazia.');
+      navigator.clipboard.writeText(msg).then(()=> {
+        // Feedback visual
+        const button = document.querySelector(`[data-act="copy"][data-id="${row.id}"]`);
+        const originalText = button.innerHTML;
+        button.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Copiado!
+        `;
+        button.classList.add('bg-green-50', 'text-green-600', 'border-green-300');
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.classList.remove('bg-green-50', 'text-green-600', 'border-green-300');
+        }, 2000);
+      }).catch(()=> alert('Falha ao copiar.'));
+    }
+    function delRow(id){
+      LIST = LIST.filter(r => r.id !== id);
+      save();
+      render();
+    }
+    function enviarTodos(){
+      if(LIST.length === 0) return alert('Lista vazia.');
+      const ok = confirm('Isso vai abrir várias abas (uma por cliente). Seu navegador pode bloquear. Continuar?');
+      if(!ok) return;
+      let i=0;
+      const step = () => {
+        if(i >= LIST.length) return; 
+        openWANotify(LIST[i]);
+        i++;
+        setTimeout(step, 600);
+      };
+      step();
+    }
+
+    // ========= CSV =========
+    function exportCSV(){
+      const header = ['nome','telefone','eta','servico','os','tecnico','mensagem','envio_enviado_em','retorno_enviado_em'];
+      const rows = LIST.map(r => [r.nome, r.telefone, r.etaRaw, r.servico||'', r.os||'', r.tecnico||'', (r.msg||''), r.sentNotifyAt||'', r.sentCloseAt||'']);
+      const csv = [header.join(','), ...rows.map(a => a.map(x => `"${String(x).replace(/"/g,'""')}"`).join(','))].join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'lista-whats.csv'; a.click();
+      URL.revokeObjectURL(url);
+    }
+    function importCSV(file){
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = reader.result; 
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        if(lines.length < 2) return alert('CSV vazio ou sem cabeçalho.');
+        const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+        const idx = (name) => header.indexOf(name);
+        const iNome = idx('nome'), iTel = idx('telefone'), iEta = idx('eta');
+        const iServ = idx('servico'), iOs = idx('os'), iTec = idx('tecnico');
+        const iMsg = idx('mensagem');
+        const iSentN = idx('envio_enviado_em');
+        const iSentC = idx('retorno_enviado_em');
+        if(iNome<0 || iTel<0 || iEta<0) return alert('Cabeçalho deve conter: nome, telefone, eta');
+        for(let i=1;i<lines.length;i++){
+          const cols = parseCSVLine(lines[i]);
+          if(!cols.length) continue;
+          const row = {
+            id: crypto.randomUUID(),
+            nome: cols[iNome] || '',
+            telefone: ensureBR(cols[iTel] || ''),
+            etaRaw: cols[iEta] || '',
+            servico: iServ>=0 ? (cols[iServ]||'') : '',
+            os: iOs>=0 ? (cols[iOs]||'') : '',
+            tecnico: iTec>=0 ? (cols[iTec]||'') : '',
+            msg: iMsg>=0 ? (cols[iMsg]||'') : undefined,
+            sentNotifyAt: iSentN>=0 ? Number(cols[iSentN]||'') || undefined : undefined,
+            sentCloseAt:  iSentC>=0 ? Number(cols[iSentC]||'') || undefined : undefined
+          };
+          const okTel = onlyDigits(row.telefone).length>=10;
+          const okEta = !!parseETA(row.etaRaw).hora;
+          if(row.nome && okTel && okEta){ LIST.push(row); }
+        }
+        save();
+        render();
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+    function parseCSVLine(line){
+      const out = []; let cur = ''; let inQuotes = false;
+      for(let i=0;i<line.length;i++){
+        const ch = line[i];
+        if(ch === '"'){
+          if(inQuotes && line[i+1] === '"'){ cur += '"'; i++; }
+          else { inQuotes = !inQuotes; }
+        } else if(ch === ',' && !inQuotes){ out.push(cur); cur=''; }
+        else cur += ch;
+      }
+      out.push(cur); return out.map(s => s.trim());
+    }
+
+    // ========= Listeners =========
+    document.addEventListener('click', (e) => {
+      const act = e.target.dataset.act;
+      if(act === 'send'){
+        const id = e.target.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if(row) openWANotify(row);
+      }
+      if(act === 'close'){
+        const id = e.target.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if(row) openWAClose(row);
+      }
+      if(act === 'copy'){
+        const id = e.target.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if(row) copyMsg(row);
+      }
+      if(act === 'del'){
+        const id = e.target.dataset.id; delRow(id);
+      }
+      if(act === 'regen'){
+        const id = e.target.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if(row){ row.msg = undefined; save(); render(); }
+      }
+    });
+    document.addEventListener('input', (e) => {
+      if(e.target.dataset.act === 'edit-msg'){
+        const id = e.target.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if(row){ row.msg = e.target.value; save(); }
+      }
+    });
+
+    // Busca & filtros
+    el('busca').addEventListener('input', (e) => { FILTER_TEXT = e.target.value; render(); });
+    el('filtroStatus').addEventListener('change', (e) => { FILTER_STATUS = e.target.value; render(); });
+
+    // Buttons
+    document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileCSV').click());
+    document.getElementById('fileCSV').addEventListener('change', (e) => { const f = e.target.files?.[0]; if(f) importCSV(f); e.target.value=''; });
+    document.getElementById('btnExport').addEventListener('click', exportCSV);
+    document.getElementById('btnLimparLista').addEventListener('click', () => { if(!confirm('Limpar toda a lista?')) return; LIST = []; save(); render(); });
+    document.getElementById('btnAdd').addEventListener('click', () => addRow(false));
+    document.getElementById('btnAddEEnviar').addEventListener('click', () => addRow(true));
+    document.getElementById('btnEnviarTodos').addEventListener('click', enviarTodos);
+
+    // Template buttons
+    document.getElementById('btnSalvarTPL').addEventListener('click', () => {
+      save();
+      // Feedback visual
+      const button = document.getElementById('btnSalvarTPL');
+      const originalText = button.innerHTML;
+      button.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Salvo!
+      `;
+      setTimeout(() => {
+        button.innerHTML = originalText;
+      }, 2000);
+    });
+    document.getElementById('btnResetTPL').addEventListener('click', () => {
+      if(confirm('Restaurar templates padrão?')) {
+        el('template').value = defaultTemplate();
+        el('templateEnc').value = defaultEncTemplate();
+        save();
+      }
+    });
+
+    // Init
+    document.addEventListener('DOMContentLoaded', load);
+  </script>
+</body>
+</html>

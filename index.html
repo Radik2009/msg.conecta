@@ -26,15 +26,46 @@
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
     textarea{resize:vertical}
     dialog::backdrop{background:rgba(0,0,0,.25)}
-    .edit-icon{opacity:0.7;transition:all .2s ease}
-    .edit-icon:hover{opacity:1;transform:scale(1.1)}
-    .carro-section{transition:all .3s ease}
-    .carro-section.hidden{display:none}
-    .highlight{background-color:#fef9c3;border-radius:4px;padding:2px 4px;}
+    .row-expand{transition:max-height .25s ease, opacity .2s ease}
+    .row-expand[aria-hidden="true"]{max-height:0;opacity:0;overflow:hidden}
+    .row-expand[aria-hidden="false"]{max-height:800px;opacity:1}
+    .row-summary{cursor:pointer}
+    .sticky-actions{position:sticky;right:0;background:#fff}
+    .dashboard-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    @media (max-width:1024px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:640px){.dashboard-grid{grid-template-columns:1fr}}
+    .kpi{border:1px solid #e5e7eb;border-radius:14px;padding:14px;background:#fff}
+    .kpi .v{font-weight:800;font-size:22px}
+    .kpi .l{font-size:12px;color:#6b7280}
+    .toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:8px;color:white;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);transform:translateY(100px);opacity:0;transition:all 0.3s ease;}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.success{background-color:#10b981;}
+    .toast.error{background-color:#ef4444;}
+    .toast.info{background-color:#3b82f6;}
+    .progress-bar{height:4px;background-color:#e5e7eb;border-radius:2px;overflow:hidden;margin-top:8px;}
+    .progress-fill{height:100%;background-color:#10b981;transition:width 0.3s ease;}
+    .history-item{border-left:3px solid #10b981;padding-left:12px;margin-bottom:8px;}
+    .history-item.error{border-left-color:#ef4444;}
+    .history-item.warning{border-left-color:#f59e0b;}
+    .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:loading 1.5s infinite;}
+    @keyframes loading{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+    .auto-save-indicator{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#6b7280;}
+    .auto-save-indicator.saving .dot{animation:pulse 1.5s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+    .dot{width:6px;height:6px;border-radius:50%;background-color:#10b981;}
+    /* Colapso com animação */
+    .collapse{overflow:hidden;transition:max-height .35s ease, opacity .25s ease}
+    .collapse.hide{max-height:0;opacity:0}
+    .collapse.show{max-height:1200px;opacity:1}
+    /* Drag & Drop */
+    .dragging{opacity:.5}
+    .drop-target{outline:2px dashed #10b981; outline-offset:-2px; background:#f0fdf4}
+    .drop-zone{min-height:10px}
   </style>
 </head>
 <body class="gradient-bg text-gray-900 min-h-screen">
   <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+
     <!-- Header -->
     <header class="flex items-center justify-between gap-4 flex-wrap bg-white rounded-2xl card-shadow p-5 sticky-header">
       <div class="flex items-center gap-3">
@@ -46,7 +77,12 @@
           <p class="text-sm text-gray-600">Fluxo: <b>Adicionar contatos ➜ Enviar</b>. Abre sempre no <b>WhatsApp Web</b>.</p>
         </div>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2 items-center">
+        <!-- Botão Histórico (abre modal) -->
+        <button id="btnOpenHistory" class="rounded-xl border border-gray-300 px-3 py-2 bg-white hover:bg-gray-50 font-medium flex items-center gap-2" title="Histórico de ações (log)">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Histórico
+        </button>
         <button id="btnImport" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
           Importar CSV
@@ -59,53 +95,55 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           Limpar lista
         </button>
+        <input id="fileCSV" type="file" accept=".csv,text/csv" class="hidden" />
       </div>
-      <input id="fileCSV" type="file" accept=".csv,text/csv" class="hidden" />
     </header>
 
-    <!-- Busca -->
-    <section class="bg-white rounded-2xl card-shadow p-6 fade-in">
-      <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2 mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        Buscar
-      </h2>
-      <div class="relative">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input id="busca" type="text" class="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Buscar por nome, chamado, telefone, serviço, técnico..." />
-      </div>
-      <p class="text-xs text-gray-500 mt-2">A busca irá filtrar e mostrar apenas as seções onde encontrar resultados</p>
-    </section>
-
-    <!-- Configuração de Templates -->
-    <section class="bg-white rounded-2xl card-shadow p-6 space-y-5 fade-in">
-      <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        Configuração de Templates
-      </h2>
-      <div class="flex items-start gap-4 flex-wrap">
-        <div class="grow">
-          <label class="block text-sm font-medium mb-2 text-gray-700" for="template">Modelo de mensagem (placeholders)</label>
-          <textarea id="template" rows="5" class="w-full rounded-xl border border-gray-300 px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
-          <p class="text-xs text-gray-500 mt-2">Placeholders: <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{nome}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{telefone}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{hora}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{minutos}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{servico}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{chamado}}</span>, <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{tecnico}}</span>.</p>
+    <!-- Configuração de Templates (recolhível) -->
+    <section class="bg-white rounded-2xl card-shadow p-0 fade-in overflow-hidden">
+      <details id="tplDetails">
+        <summary class="list-none px-6 py-4 cursor-pointer flex items-center justify-between">
+          <span class="font-bold text-lg text-gray-800 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Configuração de Templates
+          </span>
+          <span class="text-sm text-gray-500">clique para expandir</span>
+        </summary>
+        <div class="p-6 space-y-5 border-t">
+          <div class="flex items-start gap-4 flex-wrap">
+            <div class="grow">
+              <label class="block text-sm font-medium mb-2 text-gray-700" for="template">Modelo de mensagem (placeholders)</label>
+              <textarea id="template" rows="5" class="w-full rounded-xl border border-gray-300 px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
+              <p class="text-xs text-gray-500 mt-2">Placeholders:
+                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{nome}}</span>,
+                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{telefone}}</span>,
+                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{hora}}</span>,
+                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{minutos}}</span>,
+                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{servico}}</span>,
+                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{chamado}}</span>,
+                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{tecnico}}</span>.
+              </p>
+            </div>
+            <div class="flex flex-col gap-2 shrink-0">
+              <button id="btnSalvarTPL" class="btn-primary rounded-xl px-4 py-2.5 text-white font-medium flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Salvar padrão
+              </button>
+              <button id="btnResetTPL" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Restaurar padrão
+              </button>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 flex-wrap">
+            <div class="grow">
+              <label class="block text-sm font-medium mb-2 text-gray-700" for="templateEnc">Modelo de <b>encerramento</b></label>
+              <textarea id="templateEnc" rows="4" class="w-full rounded-xl border border-gray-300 px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
+              <p class="text-xs text-gray-500 mt-2">Ex.: <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">Seu chamado foi finalizado. Seguem as fotos do serviço. Qualquer dúvida, estou à disposição.</span></p>
+            </div>
+          </div>
         </div>
-        <div class="flex flex-col gap-2 shrink-0">
-          <button id="btnSalvarTPL" class="btn-primary rounded-xl px-4 py-2.5 text-white font-medium flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Salvar padrão
-          </button>
-          <button id="btnResetTPL" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Restaurar padrão
-          </button>
-        </div>
-      </div>
-      <div class="flex items-start gap-4 flex-wrap">
-        <div class="grow">
-          <label class="block text-sm font-medium mb-2 text-gray-700" for="templateEnc">Modelo de <b>encerramento</b></label>
-          <textarea id="templateEnc" rows="4" class="w-full rounded-xl border border-gray-300 px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
-          <p class="text-xs text-gray-500 mt-2">Ex.: <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">Seu chamado foi finalizado. Seguem as fotos do serviço. Qualquer dúvida, estou à disposição.</span></p>
-        </div>
-      </div>
+      </details>
     </section>
 
     <!-- Form para adicionar linhas -->
@@ -161,10 +199,67 @@
       </div>
     </section>
 
-    <!-- Lista de envios por carro -->
-    <section id="lista-carros" class="space-y-4">
-      <!-- As seções dos carros serão geradas dinamicamente aqui -->
+    <!-- DASHBOARD -->
+    <section class="bg-white rounded-2xl card-shadow p-6 fade-in">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+          </svg>
+          Dashboard
+        </h2>
+        <div class="flex items-center gap-2">
+          <span id="autoSaveIndicator" class="auto-save-indicator"><span class="dot"></span> Pronto</span>
+          <button id="btnToggleDash" class="rounded-lg border px-3 py-2 bg-white hover:bg-gray-50 text-sm">Ocultar</button>
+        </div>
+      </div>
+      <div id="dashBody" class="collapse show">
+        <!-- KPIs -->
+        <div class="dashboard-grid mb-6">
+          <div class="kpi"><div class="l">Cadastrados</div><div id="kpi-total" class="v">0</div></div>
+          <div class="kpi"><div class="l">Informados (enviados)</div><div id="kpi-informados" class="v">0</div></div>
+          <div class="kpi"><div class="l">Pendentes de envio</div><div id="kpi-pendentes" class="v">0</div></div>
+          <div class="kpi"><div class="l">Encerrados</div><div id="kpi-encerrados" class="v">0</div></div>
+        </div>
+
+        <!-- Por carro -->
+        <div class="overflow-x-auto rounded-xl border border-gray-200 mb-6">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-gray-700 border-b border-gray-200">
+                <th class="p-3 text-left font-semibold">Carro</th>
+                <th class="p-3 text-left font-semibold">Total</th>
+                <th class="p-3 text-left font-semibold">Informados</th>
+                <th class="p-3 text-left font-semibold">Encerrados</th>
+              </tr>
+            </thead>
+            <tbody id="dash-carros"></tbody>
+          </table>
+        </div>
+
+        <!-- Encerrados recentes -->
+        <div>
+          <h3 class="font-semibold text-gray-800 mb-2">Encerrados recentes</h3>
+          <ul id="dash-recentes" class="space-y-2 text-sm"></ul>
+        </div>
+      </div>
     </section>
+
+    <!-- BUSCA (acima da lista) -->
+    <section id="sec-busca" class="bg-white rounded-2xl card-shadow p-6 fade-in">
+      <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Buscar
+      </h2>
+      <div class="relative">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input id="busca" type="text" class="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Buscar por nome, chamado, telefone, serviço, técnico..." />
+      </div>
+      <p class="text-xs text-gray-500 mt-2">A busca filtra e só mostra as seções com resultados.</p>
+    </section>
+
+    <!-- Lista de envios por carro -->
+    <section id="lista-carros" class="space-y-4"></section>
 
     <footer class="text-center text-xs text-gray-500 py-4">Sem servidor. Para envio 100% automático (sem confirmação) ou <b>com fotos</b>, use WhatsApp Cloud API + backend.</footer>
   </main>
@@ -181,12 +276,24 @@
         <div class="font-medium" id="dlgSendNome"></div>
         <div class="mono text-gray-600" id="dlgSendTel"></div>
       </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="md:col-span-2">
+          <label class="text-sm text-gray-700">Tempo previsto (ex.: 45m ou 16:30)</label>
+          <input id="dlgSendEta" type="text" class="w-full rounded-xl border p-2.5" />
+          <p class="text-xs text-gray-500 mt-1" id="dlgSendEtaInfo"></p>
+        </div>
+        <div class="flex items-end">
+          <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" id="dlgSendHora" class="rounded border-gray-300">
+            Incluir horário na mensagem
+          </label>
+        </div>
+      </div>
+
       <div class="text-xs text-gray-500">Mensagem</div>
       <textarea id="dlgSendMsg" rows="8" class="w-full rounded-xl border p-3 mono"></textarea>
-      <div class="flex items-center gap-2">
-        <input type="checkbox" id="dlgSendHora" class="rounded border-gray-300">
-        <label for="dlgSendHora" class="text-sm text-gray-700">Incluir horário na mensagem</label>
-      </div>
+
       <div class="flex items-center gap-2">
         <button id="btnReagendar" class="rounded-lg border border-red-300 px-3 py-2 bg-white text-red-600 hover:bg-red-50">Remover para Reagendamento</button>
       </div>
@@ -197,79 +304,181 @@
     </div>
   </dialog>
 
+  <!-- Modal Histórico -->
+  <dialog id="dlgHistory" class="rounded-2xl p-0 w-full max-w-2xl">
+    <div class="p-5 border-b flex items-center justify-between">
+      <h3 class="font-semibold">Histórico de Ações</h3>
+      <div class="flex items-center gap-2">
+        <button id="btnClearHistory" class="rounded-lg border border-gray-300 px-3 py-2 bg-white hover:bg-gray-50 text-sm">Limpar</button>
+        <button id="dlgHistoryClose" class="rounded-lg border px-2 py-1 text-sm">Fechar</button>
+      </div>
+    </div>
+    <div class="p-5">
+      <ul id="history-list" class="space-y-2 text-sm max-h-96 overflow-y-auto"></ul>
+    </div>
+  </dialog>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
   <script>
     // ========= Utils =========
     const el = (id)=>document.getElementById(id);
     const onlyDigits = (s)=> (s||'').replace(/\D+/g,'');
     const BR_PREFIX = '55';
-    
+
+    // Sistema de histórico
+    let ACTION_HISTORY = [];
+    const MAX_HISTORY_ITEMS = 50;
+
+    function addToHistory(action, details, type = 'info') {
+      const timestamp = new Date().toLocaleString('pt-BR');
+      ACTION_HISTORY.unshift({ action, details, type, timestamp });
+      if (ACTION_HISTORY.length > MAX_HISTORY_ITEMS) ACTION_HISTORY = ACTION_HISTORY.slice(0, MAX_HISTORY_ITEMS);
+      localStorage.setItem('action_history', JSON.stringify(ACTION_HISTORY));
+      renderHistory();
+    }
+    function renderHistory() {
+      const historyList = el('history-list');
+      if (!historyList) return;
+      historyList.innerHTML = '';
+      if (ACTION_HISTORY.length === 0) {
+        historyList.innerHTML = '<li class="text-gray-500 text-center py-4">Nenhuma ação registrada ainda.</li>';
+        return;
+      }
+      ACTION_HISTORY.forEach(item => {
+        const li = document.createElement('li');
+        li.className = `history-item ${item.type === 'error' ? 'error' : item.type === 'warning' ? 'warning' : ''}`;
+        li.innerHTML = `
+          <div class="flex justify-between">
+            <span class="font-medium">${escapeHtml(item.action)}</span>
+            <span class="text-xs text-gray-500">${item.timestamp}</span>
+          </div>
+          <div class="text-xs text-gray-600 mt-1">${escapeHtml(item.details)}</div>
+        `;
+        historyList.appendChild(li);
+      });
+    }
+
+    // Toast
+    function showToast(message, type = 'info', duration = 3000) {
+      const toast = el('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type}`;
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => toast.classList.remove('show'), duration);
+    }
+
+    // Indicador de salvamento
+    function showAutoSaveIndicator(show) {
+      const indicator = el('autoSaveIndicator');
+      if (!indicator) return;
+      if (show) {
+        indicator.classList.add('saving');
+        indicator.innerHTML = '<span class="dot"></span> Salvando...';
+      } else {
+        indicator.classList.remove('saving');
+        indicator.innerHTML = '<span class="dot"></span> Salvo';
+        setTimeout(() => { indicator.innerHTML = '<span class="dot"></span> Pronto'; }, 2000);
+      }
+    }
+
+    // Backup
+    function createBackup() {
+      const backupData = { lista: LIST, template: el('template').value, templateEnc: el('templateEnc').value, timestamp: Date.now() };
+      localStorage.setItem('backup_data', JSON.stringify(backupData));
+    }
+    function restoreBackup() {
+      try {
+        const backupData = JSON.parse(localStorage.getItem('backup_data') || '{}');
+        if (backupData.lista && backupData.template) {
+          LIST = backupData.lista;
+          el('template').value = backupData.template;
+          el('templateEnc').value = backupData.templateEnc || defaultEncTemplate();
+          save(); render();
+          showToast('Backup restaurado com sucesso', 'success');
+          addToHistory('Backup restaurado', 'Dados restaurados do backup automático');
+        }
+      } catch (e) { console.error('Erro ao restaurar backup:', e); }
+    }
+
+    function computeStats() {
+      const total = LIST.length;
+      const informados = LIST.filter(r => !!r.sentNotifyAt).length;
+      const encerrados = LIST.filter(r => !!r.sentCloseAt).length;
+      const pendentes = total - informados;
+      const porCarro = CARROS.map(c => {
+        const rows = LIST.filter(r => r.carro === c);
+        return { carro: c, total: rows.length, informados: rows.filter(r => !!r.sentNotifyAt).length, encerrados: rows.filter(r => !!r.sentCloseAt).length };
+      }).filter(x => x.total > 0);
+      const recentes = LIST.filter(r => !!r.sentCloseAt).sort((a,b)=>b.sentCloseAt-a.sentCloseAt).slice(0,8)
+        .map(r => ({ nome:r.nome, chamado:r.chamado||'—', carro:r.carro, quando: fromNow(r.sentCloseAt) }));
+      return { total, informados, encerrados, pendentes, porCarro, recentes };
+    }
+
+    function renderDashboard() {
+      const d = computeStats();
+      el('kpi-total').textContent = String(d.total);
+      el('kpi-informados').textContent = String(d.informados);
+      el('kpi-pendentes').textContent = String(d.pendentes);
+      el('kpi-encerrados').textContent = String(d.encerrados);
+      const tbody = el('dash-carros'); tbody.innerHTML = '';
+      d.porCarro.forEach(item => {
+        const label = (item.carro === 'argo') ? 'Argo' : (item.carro === 'motoboy' ? 'Motoboy' : `Carro ${item.carro}`);
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100';
+        tr.innerHTML = `<td class="p-3">${label}</td><td class="p-3">${item.total}</td><td class="p-3">${item.informados}</td><td class="p-3">${item.encerrados}</td>`;
+        tbody.appendChild(tr);
+      });
+      const ul = el('dash-recentes'); ul.innerHTML = '';
+      if (d.recentes.length === 0) {
+        ul.innerHTML = `<li class="text-gray-500">Nenhum encerramento ainda.</li>`;
+      } else {
+        d.recentes.forEach(rec => {
+          const li = document.createElement('li');
+          li.className = 'bg-gray-50 border border-gray-200 rounded-lg p-3';
+          const label = (rec.carro === 'argo') ? 'Argo' : (rec.carro === 'motoboy' ? 'Motoboy' : `Carro ${rec.carro}`);
+          li.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-2">
+              <div><span class="font-medium">${escapeHtml(rec.nome)}</span>
+              <span class="text-gray-500"> • Chamado: ${escapeHtml(rec.chamado)}</span>
+              <span class="text-gray-500"> • ${label}</span></div>
+              <span class="text-xs text-gray-600">${rec.quando}</span></div>`;
+          ul.appendChild(li);
+        });
+      }
+    }
+
     function ensureBR(msisdn){
-      let d=onlyDigits(msisdn).replace(/^0+/, '');
-      return d.startsWith(BR_PREFIX)? d : (BR_PREFIX+d);
+      let d=onlyDigits(msisdn).replace(/^0+/,''); return d.startsWith(BR_PREFIX)? d : (BR_PREFIX+d);
     }
-    
-    function toHHMM(date){
-      const d=new Date(date);
-      return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',hour12:false});
-    }
-    
+    function toHHMM(date){ const d=new Date(date); return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',hour12:false}); }
     function parseETA(raw){
-      const t=(raw||'').trim();
-      if(!t) return {hora:'', minutos:''};
+      const t=(raw||'').trim(); if(!t) return {hora:'', minutos:'', minsNum:null};
       if(/\d{1,2}:\d{2}/.test(t)){
-        const [h,m]=t.split(':').map(Number);
-        const now=new Date();
-        const est=new Date(now);
-        est.setHours(h,m,0,0);
-        if(est<now) est.setDate(est.getDate()+1);
+        const [h,m]=t.split(':').map(Number); const now=new Date(); const est=new Date(now);
+        est.setHours(h,m,0,0); if(est<now) est.setDate(est.getDate()+1);
         const diff=Math.max(0, Math.round((est-now)/60000));
-        return {hora: toHHMM(est), minutos: `${diff}min`};
+        return {hora: toHHMM(est), minutos: `${diff}min`, minsNum: diff};
       }
       const mins=parseInt(t,10);
-      if(Number.isFinite(mins)){
-        const est=new Date(Date.now()+mins*60000);
-        return {hora: toHHMM(est), minutos: `${mins}min`};
-      }
-      return {hora:'', minutos:''};
+      if(Number.isFinite(mins)){ const est=new Date(Date.now()+mins*60000); return {hora: toHHMM(est), minutos: `${mins}min`, minsNum: mins}; }
+      return {hora:'', minutos:'', minsNum:null};
     }
-    
-    function renderTemplate(tpl, ctx){
-      return tpl.replace(/\{\{(.*?)\}\}/g, (_,k)=> (ctx[k.trim()] ?? ''));
-    }
-    
-    function escapeHtml(s){
-      return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
-    }
-    
+    function renderTemplate(tpl, ctx){ return tpl.replace(/\{\{(.*?)\}\}/g, (_,k)=> (ctx[k.trim()] ?? '')); }
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
     function highlightText(text, searchTerm) {
-      if (!searchTerm) return escapeHtml(text);
-      const escapedText = escapeHtml(text);
-      const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      return escapedText.replace(regex, '<mark class="highlight">$1</mark>');
+      if (!searchTerm) return escapeHtml(text||''); const escaped = escapeHtml(text||'');
+      const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')})`,'gi'); return escaped.replace(regex,'<mark class="bg-yellow-100 rounded px-0.5">$1</mark>');
     }
-    
     function fromNow(ts){
-      if(!ts) return '';
-      const diff=Date.now()-ts;
-      const m=Math.floor(diff/60000);
-      if(m<1) return 'agora';
-      if(m<60) return `há ${m} min`;
-      const h=Math.floor(m/60);
-      if(h<24) return `há ${h} h`;
-      const d=Math.floor(h/24);
-      return `há ${d} d`;
+      if(!ts) return ''; const diff=Date.now()-ts; const m=Math.floor(diff/60000);
+      if(m<1) return 'agora'; if(m<60) return `há ${m} min`; const h=Math.floor(m/60); if(h<24) return `há ${h} h`;
+      const d=Math.floor(h/24); return `há ${d} d`;
     }
-    
     function maskPhone(v){
       const d=onlyDigits(v);
-      if(d.startsWith('55') && d.length>=13){
-        const pais=d.slice(0,2), ddd=d.slice(2,4), pre=d.slice(4,9), suf=d.slice(9,13);
-        return `+${pais} (${ddd}) ${pre}-${suf}`;
-      }
-      if(d.length>=10){
-        const ddd=d.slice(0,2), pre=d.slice(2,7), suf=d.slice(7,11);
-        return `(${ddd}) ${pre}-${suf}`;
-      }
+      if(d.startsWith('55') && d.length>=13){ const pais=d.slice(0,2), ddd=d.slice(2,4), pre=d.slice(4,9), suf=d.slice(9,13); return `+${pais} (${ddd}) ${pre}-${suf}`; }
+      if(d.length>=10){ const ddd=d.slice(0,2), pre=d.slice(2,7), suf=d.slice(7,11); return `(${ddd}) ${pre}-${suf}`; }
       return d;
     }
 
@@ -283,155 +492,103 @@
 🛠️ Serviço: {{servico}}
 👨Técnico: {{tecnico}}
 
-Se precisar tirar dúvidas, pode responder por aqui. Estamos à disposição. ✅`
+Se precisar tirar dúvidas, pode responder por aqui. Estamos à disposição. ✅`;
     }
-    
     function defaultEncTemplate(){
       return `✅ Serviço concluído, {{nome}}!
 
 📍 Smart Conecta — Seu chamado foi finalizado com sucesso.
 📞 Suporte: https://wa.me/5511994450724
 
-Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`
+Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     }
 
     // ========= Estado =========
-    let LIST=[];
-    const CARROS = ['51', '84', '30', '96', '97', 'argo', 'motoboy'];
-    let PREVIEW_ROW=null;
-    let SEARCH_TERM = '';
+    let LIST=[]; const CARROS = ['51','84','30','96','97','argo','motoboy'];
+    let PREVIEW_ROW=null; let SEARCH_TERM='';
 
-    function save(){
-      localStorage.setItem('lista_envio_whats_webonly', JSON.stringify(LIST));
-      localStorage.setItem('tpl_envio_whats_webonly', el('template').value);
-      localStorage.setItem('tpl_enc_whats_webonly', el('templateEnc').value);
-    }
-    
-    function load(){
+    function save() {
+      showAutoSaveIndicator(true);
       try{
-        LIST=JSON.parse(localStorage.getItem('lista_envio_whats_webonly')||'[]')||[]
-      }catch{
-        LIST=[]
-      }
+        localStorage.setItem('lista_envio_whats_webonly', JSON.stringify(LIST));
+        localStorage.setItem('tpl_envio_whats_webonly', el('template').value);
+        localStorage.setItem('tpl_enc_whats_webonly', el('templateEnc').value);
+        createBackup();
+        renderDashboard();
+        setTimeout(()=>showAutoSaveIndicator(false), 500);
+      }catch(e){ showToast('Erro ao salvar dados','error'); console.error(e); }
+    }
+    function load() {
+      try{ LIST=JSON.parse(localStorage.getItem('lista_envio_whats_webonly')||'[]')||[] }catch{ LIST=[]; restoreBackup(); }
+      try{ ACTION_HISTORY = JSON.parse(localStorage.getItem('action_history') || '[]') }catch{ ACTION_HISTORY=[] }
       el('template').value = localStorage.getItem('tpl_envio_whats_webonly') || defaultTemplate();
       el('templateEnc').value = localStorage.getItem('tpl_enc_whats_webonly') || defaultEncTemplate();
-      render();
+      render(); renderHistory();
     }
 
     // ========= WA =========
-    function buildWAUrl(numero, msg){
-      const enc=encodeURIComponent((msg&&msg.trim())?msg:' ');
-      return `https://web.whatsapp.com/send?phone=${numero}&text=${enc}`
-    }
-    
-    function openURL(url){
-      const w=window.open(url,'_blank');
-      if(!w){
-        window.location.href=url
-      }
-    }
-    
-    function getRowMessage(row, incluirHora = false){
+    function buildWAUrl(numero, msg){ const enc=encodeURIComponent((msg&&msg.trim())?msg:' '); return `https://web.whatsapp.com/send?phone=${numero}&text=${enc}` }
+    function openURL(url){ const w=window.open(url,'_blank'); if(!w){ window.location.href=url } }
+    function getRowMessage(row, incluirHora=false){
       const {hora,minutos}=parseETA(incluirHora ? row.etaRaw : '');
       const tpl=el('template').value||defaultTemplate();
-      const fallback=renderTemplate(tpl,{
-        nome:row.nome, 
-        telefone:row.telefone, 
-        hora: incluirHora ? hora : '',
-        minutos: incluirHora ? minutos : '',
-        servico:row.servico||'', 
-        chamado:row.chamado||'', 
-        tecnico:row.tecnico||''
-      }).trim();
-      
+      const fallback=renderTemplate(tpl,{ nome:row.nome, telefone:row.telefone, hora: incluirHora ? hora : '', minutos: incluirHora ? minutos : '', servico:row.servico||'', chamado:row.chamado||'', tecnico:row.tecnico||'' }).trim();
       const msg=(typeof row.msg==='string'? row.msg.trim(): fallback);
-      return msg||fallback
+      return msg||fallback;
     }
-    
     function getCloseMessage(row){
-      const tpl=el('templateEnc').value||defaultEncTemplate();
-      const {hora,minutos}=parseETA(row.etaRaw);
-      return renderTemplate(tpl,{
-        nome:row.nome, 
-        telefone:row.telefone, 
-        hora, 
-        minutos, 
-        servico:row.servico||'', 
-        chamado:row.chamado||'', 
-        tecnico:row.tecnico||''
-      }).trim();
+      const tpl=el('templateEnc').value||defaultEncTemplate(); const {hora,minutos}=parseETA(row.etaRaw);
+      return renderTemplate(tpl,{ nome:row.nome, telefone:row.telefone, hora, minutos, servico:row.servico||'', chamado:row.chamado||'', tecnico:row.tecnico||'' }).trim();
     }
-    
-    function openWANotify(row, incluirHora = false){
-      const msg = getRowMessage(row, incluirHora);
-      const numero=ensureBR(row.telefone);
-      const url=buildWAUrl(numero,msg);
-      openURL(url);
-      row.sentNotifyAt=Date.now();
-      save();
-      render();
+    function openWANotify(row, incluirHora=false){
+      const msg=getRowMessage(row,incluirHora); const numero=ensureBR(row.telefone); openURL(buildWAUrl(numero,msg));
+      row.sentNotifyAt=Date.now(); save(); render();
+      addToHistory('Notificação enviada', `Para ${row.nome} (${maskPhone(row.telefone)})`); showToast(`Notificação enviada para ${row.nome}`,'success');
     }
-    
     function openWAClose(row){
-      const msg=getCloseMessage(row)||defaultEncTemplate();
-      const numero=ensureBR(row.telefone);
-      const url=buildWAUrl(numero,msg);
-      openURL(url);
-      row.sentCloseAt=Date.now();
-      save();
-      render();
+      const msg=getCloseMessage(row)||defaultEncTemplate(); const numero=ensureBR(row.telefone); openURL(buildWAUrl(numero,msg));
+      row.sentCloseAt=Date.now(); save(); render();
+      addToHistory('Encerramento enviado', `Para ${row.nome} (${maskPhone(row.telefone)})`); showToast(`Encerramento enviada para ${row.nome}`,'success');
     }
 
     // ========= Render =========
     function statusChips(row){
-      const envio = row.sentNotifyAt 
+      const envio = row.sentNotifyAt
         ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 status-chip">Envio ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentNotifyAt)}</span></span>`
         : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip">Envio pendente</span>`;
-      
-      const retorno = row.sentCloseAt 
+      const retorno = row.sentCloseAt
         ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 status-chip">Retorno ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentCloseAt)}</span></span>`
-        : (row.sentNotifyAt 
+        : (row.sentNotifyAt
           ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200 status-chip">Retorno pendente</span>`
           : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip">Retorno —</span>`);
-      
-      return `<div class="flex flex-wrap gap-1">${envio}${retorno}</div>`
+      return `<div class="flex flex-wrap gap-1">${envio}${retorno}</div>`;
     }
-    
+    function norm(s){ return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+
     function renderCarroSection(carro){
       const carroId = carro.toLowerCase().replace(/\s+/g, '-');
       const carroRows = LIST.filter(r => r.carro === carro);
-      
-      // Filtrar por busca se houver termo
-      const filteredRows = SEARCH_TERM ? 
-        carroRows.filter(row => 
-          norm(row.nome).includes(norm(SEARCH_TERM)) ||
-          norm(row.chamado).includes(norm(SEARCH_TERM)) ||
-          norm(row.telefone).includes(norm(SEARCH_TERM)) ||
-          norm(row.servico).includes(norm(SEARCH_TERM)) ||
-          norm(row.tecnico).includes(norm(SEARCH_TERM))
-        ) : carroRows;
-      
-      // Se não há resultados e há busca, não mostrar a seção
-      if (SEARCH_TERM && filteredRows.length === 0) {
-        const existingSection = el(`carro-${carroId}`);
-        if (existingSection) {
-          existingSection.classList.add('hidden');
-        }
-        return;
-      }
-      
+      if (carroRows.length === 0) { const existing = el(`carro-${carroId}`); if (existing) existing.remove(); return; }
+
+      const filteredRows = SEARCH_TERM ? carroRows.filter(row =>
+        norm(row.nome).includes(SEARCH_TERM) ||
+        norm(row.chamado).includes(SEARCH_TERM) ||
+        norm(row.telefone).includes(SEARCH_TERM) ||
+        norm(row.servico).includes(SEARCH_TERM) ||
+        norm(row.tecnico).includes(SEARCH_TERM)
+      ) : carroRows;
+
+      if (filteredRows.length === 0) { const existing = el(`carro-${carroId}`); if (existing) existing.remove(); return; }
+
       let section = el(`carro-${carroId}`);
       if (!section) {
         section = document.createElement('div');
         section.id = `carro-${carroId}`;
         section.className = 'bg-white rounded-2xl card-shadow p-6 fade-in carro-section';
         el('lista-carros').appendChild(section);
-      } else {
-        section.classList.remove('hidden');
       }
-      
       const displayName = carro === 'argo' ? 'Argo' : carro === 'motoboy' ? 'Motoboy' : `Carro ${carro}`;
-      
+
       section.innerHTML = `
         <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
           <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
@@ -446,6 +603,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`
             Enviar todos
           </button>
         </div>
+
         <div class="mt-4 overflow-x-auto relative rounded-xl border border-gray-200">
           <table class="min-w-full text-sm table-auto">
             <thead>
@@ -454,164 +612,142 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`
                 <th class="p-3 text-left font-semibold">Telefone</th>
                 <th class="p-3 text-left font-semibold">Chamado</th>
                 <th class="p-3 text-left font-semibold">Previsto</th>
-                <th class="p-3 text-left font-semibold">Serviço</th>
-                <th class="p-3 text-left font-semibold">Técnico</th>
-                <th class="p-3 text-left font-semibold">Status</th>
-                <th class="p-3 text-left font-semibold">Mensagem</th>
-                <th class="p-3 text-left nowrap sticky right-0 bg-gray-50 z-10 font-semibold">Ações</th>
+                <th class="p-3 text-left font-semibold sticky-actions">Ações</th>
               </tr>
             </thead>
-            <tbody id="tbody-${carroId}" class="align-top"></tbody>
+            <tbody id="tbody-${carroId}" class="align-top drop-zone" data-carro="${carro}"></tbody>
           </table>
         </div>
       `;
-      
-      const tbody = el(`tbody-${carroId}`);
-      tbody.innerHTML = '';
-      
+
+      const tbody = el(`tbody-${carroId}`); tbody.innerHTML = '';
+
       for(const row of filteredRows){
-        const {hora,minutos}=parseETA(row.etaRaw);
-        const ctx={
-          nome:row.nome, 
-          telefone:row.telefone, 
-          hora, 
-          minutos, 
-          servico:row.servico||'', 
-          chamado:row.chamado||'', 
-          tecnico:row.tecnico||''
-        };
-        
-        const tpl=el('template').value || defaultTemplate();
-        const msgDefault=renderTemplate(tpl,ctx).trim();
-        const msg=(typeof row.msg==='string'? row.msg: msgDefault).trim();
-        
-        const tr=document.createElement('tr');
-        tr.className='border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150';
+        const {hora,minutos, minsNum}=parseETA(row.etaRaw);
+        const resumoPrev = hora ? `<span class='font-medium'>${hora}</span> <span class='text-gray-500 text-xs'>(${minutos})</span>` : '<span class="text-gray-400 text-xs">—</span>';
+
+        // Linha RESUMO (draggable + ações sempre visíveis)
+        const tr = document.createElement('tr');
+        tr.className='border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 row-summary';
+        tr.dataset.id=row.id;
+        tr.setAttribute('draggable','true');
         tr.innerHTML = `
-          <td class="p-3 align-top font-medium">${highlightText(row.nome, SEARCH_TERM)}</td>
-          <td class="p-3 align-top mono">${highlightText(maskPhone(row.telefone), SEARCH_TERM)}</td>
-          <td class="p-3 align-top">${highlightText(row.chamado || '', SEARCH_TERM)}</td>
-          <td class="p-3 align-top">${hora? `<span class='font-medium'>${hora}</span> <span class='text-gray-500 text-xs'>(${minutos})</span>`: '<span class="text-gray-400 text-xs">Não informado</span>'}</td>
-          <td class="p-3 align-top">${highlightText(row.servico||'', SEARCH_TERM)}</td>
-          <td class="p-3 align-top">${highlightText(row.tecnico||'', SEARCH_TERM)}</td>
-          <td class="p-3 align-top">${statusChips(row)}</td>
-          <td class="p-3 align-top mono text-gray-700 relative">
-            <div class="flex items-start gap-2">
-              <textarea rows="4" class="w-full rounded-lg border border-gray-300 p-3 break-words focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" data-act="edit-msg" data-id="${row.id}">${escapeHtml(msg)}</textarea>
-              <button class="edit-icon p-2 text-gray-500 hover:text-emerald-600" data-act="edit-focus" data-id="${row.id}" title="Editar mensagem">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-              </button>
+          <td class="p-3 font-medium">${highlightText(row.nome, SEARCH_TERM)}</td>
+          <td class="p-3 mono">${highlightText(maskPhone(row.telefone), SEARCH_TERM)}</td>
+          <td class="p-3">${highlightText(row.chamado || '', SEARCH_TERM)}</td>
+          <td class="p-3">${resumoPrev}</td>
+          <td class="p-3 sticky-actions">
+            <div class="flex flex-wrap gap-2 justify-end">
+              <button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-150" data-act="send" data-id="${row.id}">Enviar</button>
+              <button class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-150" data-act="close" data-id="${row.id}">Encerrar</button>
+              <button class="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 bg-white hover:bg-red-50 transition-colors duration-150" data-act="del" data-id="${row.id}">Remover</button>
             </div>
           </td>
-          <td class="p-3 align-top sticky right-0 bg-white z-10">
-            <div class="flex flex-col gap-2">
-              <button class="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-150 flex items-center justify-center gap-1" data-act="send" data-id="${row.id}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                Enviar
-              </button>
-              <button class="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-150 flex items-center justify-center gap-1" data-act="close" data-id="${row.id}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                Encerrar
-              </button>
-              <button class="px-3 py-2 rounded-lg border border-red-300 text-red-600 bg-white hover:bg-red-50 transition-colors duration-150" data-act="del" data-id="${row.id}">Remover</button>
-            </div>
-          </td>`;
+        `;
         tbody.appendChild(tr);
+
+        // Linha DETALHES (expandida)
+        const trDet = document.createElement('tr');
+        trDet.className='bg-white';
+        trDet.innerHTML = `
+          <td class="p-0" colspan="5">
+            <div class="row-expand" id="expand-${row.id}" aria-hidden="true">
+              <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-t">
+                <div><div class="text-xs text-gray-500 mb-1">Serviço</div><div class="text-sm">${highlightText(row.servico||'—', SEARCH_TERM)}</div></div>
+                <div><div class="text-xs text-gray-500 mb-1">Técnico</div><div class="text-sm">${highlightText(row.tecnico||'—', SEARCH_TERM)}</div></div>
+                <div><div class="text-xs text-gray-500 mb-1">Status</div><div class="text-sm">${statusChips(row)}</div></div>
+
+                <div class="md:col-span-3">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tempo previsto (antes do envio)</label>
+                  <div class="flex gap-2 items-center">
+                    <input type="text" class="rounded-lg border px-3 py-2 w-40" placeholder="45m ou 16:30"
+                           data-act="edit-eta" data-id="${row.id}" value="${escapeHtml(row.etaRaw||'')}">
+                    <span class="text-sm text-gray-600" id="eta-info-${row.id}">
+                      ${hora ? `Chega às <b>${hora}</b> (faltam <b>${minsNum}</b> min)` : '—'}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="md:col-span-3">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
+                  <textarea rows="4" class="w-full rounded-lg border border-gray-300 p-3 break-words focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" data-act="edit-msg" data-id="${row.id}">${escapeHtml(getRowMessage(row,false))}</textarea>
+                  <div class="text-xs text-gray-500 mt-1">Dica: marque o horário na modal de envio para inserir {{hora}} e {{minutos}}.</div>
+                </div>
+              </div>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(trDet);
+
+        // Clique (expande) / duplo clique (recolhe)
+        tr.addEventListener('click', () => toggleExpand(row.id, true));
+        tr.addEventListener('dblclick', () => toggleExpand(row.id, false));
+
+        // Drag events (linha)
+        tr.addEventListener('dragstart', (ev)=>onDragStart(ev,row));
+        tr.addEventListener('dragend', onDragEnd);
+        tr.addEventListener('dragover', onDragOverRow);
+        tr.addEventListener('drop', (ev)=>onDropOnRow(ev, carro));
       }
+
+      // Permitir soltar no tbody (fim da lista / mover entre carros)
+      tbody.addEventListener('dragover', onDragOverTbody);
+      tbody.addEventListener('drop', (ev)=>onDropOnTbody(ev, carro));
     }
-    
-    function norm(s){
-      return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+
+    function toggleExpand(id, expand=true){
+      const pane = el(`expand-${id}`); if(!pane) return;
+      const current = pane.getAttribute('aria-hidden') === 'false';
+      if(expand && !current){ pane.setAttribute('aria-hidden','false'); return; }
+      if(!expand && current){ pane.setAttribute('aria-hidden','true'); return; }
+      pane.setAttribute('aria-hidden', current ? 'true' : 'false');
     }
-    
-    function render(){
-      // Renderizar cada carro
-      CARROS.forEach(carro => {
-        renderCarroSection(carro);
-      });
+
+    function render() {
+      el('lista-carros').innerHTML = '';
+      CARROS.forEach(renderCarroSection);
+      renderDashboard();
     }
 
     // ========= Ações =========
-    function addRow(){
-      const nome=el('nome').value.trim();
-      let telefone=ensureBR(el('telefone').value);
-      const carro=el('carro').value;
-      const etaRaw=el('eta').value.trim();
-      const servico=el('servico').value.trim();
-      const chamado=el('chamado').value.trim();
-      const tecnico=el('tecnico').value.trim();
-      
-      if(!nome) return alert('Informe o nome.');
-      const tel=onlyDigits(telefone);
-      if(!tel || tel.length<10) return alert('Telefone inválido. Use DDD + número.');
-      if(!carro) return alert('Selecione o carro.');
-      
+    function addRow() {
+      const nome=el('nome').value.trim(); let telefone=ensureBR(el('telefone').value);
+      const carro=el('carro').value; const etaRaw=el('eta').value.trim();
+      const servico=el('servico').value.trim(); const chamado=el('chamado').value.trim(); const tecnico=el('tecnico').value.trim();
+
+      if(!nome){ showToast('Informe o nome','error'); return; }
+      const tel=onlyDigits(telefone); if(!tel || tel.length<10){ showToast('Telefone inválido. Use DDD + número.','error'); return; }
+      if(!carro){ showToast('Selecione o carro','error'); return; }
+
       const {hora,minutos}=parseETA(etaRaw);
-      const msg=renderTemplate(el('template').value||defaultTemplate(), {
-        nome, telefone, hora, minutos, servico, chamado, tecnico
-      }).trim();
-      
-      const row={
-        id:crypto.randomUUID(), 
-        nome, 
-        telefone, 
-        carro,
-        etaRaw, 
-        servico, 
-        chamado, 
-        tecnico, 
-        msg, 
-        selected:false
-      };
-      
-      LIST.unshift(row);
-      save();
-      render();
-      ['nome','telefone','eta','servico','chamado','tecnico'].forEach(id=>el(id).value='');
-      el('carro').value = '';
+      const msg=renderTemplate(el('template').value||defaultTemplate(), { nome, telefone, hora, minutos, servico, chamado, tecnico }).trim();
+
+      const row={ id:crypto.randomUUID(), nome, telefone, carro, etaRaw, servico, chamado, tecnico, msg, selected:false };
+      LIST.unshift(row); save(); render();
+      ['nome','telefone','eta','servico','chamado','tecnico'].forEach(id=>el(id).value=''); el('carro').value='';
+      addToHistory('Cliente adicionado', `${nome} (${maskPhone(telefone)}) - Carro ${carro}`); showToast(`${nome} adicionado à lista`,'success');
     }
-    
-    function copyMsg(row){
-      const msg=getRowMessage(row);
-      if(!msg) return alert('Mensagem vazia.');
-      navigator.clipboard.writeText(msg).then(()=>{
-        alert('Mensagem copiada.')
-      }).catch(()=> alert('Falha ao copiar.'));
-    }
-    
+
     function delRow(id){
-      LIST = LIST.filter(r=>r.id!==id);
-      save();
-      render();
+      const row = LIST.find(r => r.id === id);
+      LIST = LIST.filter(r=>r.id!==id); save(); render();
+      if (row) { addToHistory('Cliente removido', `${row.nome} (${maskPhone(row.telefone)})`); showToast(`${row.nome} removido da lista`,'info'); }
     }
-    
+
     function enviarCarro(carro){
       const items = LIST.filter(r=>r.carro === carro && !r.sentNotifyAt);
-      if(items.length===0) return alert(`Nenhum item pendente para ${carro === 'argo' ? 'Argo' : carro === 'motoboy' ? 'Motoboy' : `Carro ${carro}`}.`);
-      
-      const ok=confirm(`Isso vai abrir ${items.length} aba(s) do WhatsApp. Seu navegador pode bloquear. Continuar?`);
-      if(!ok) return;
-      
-      let i=0;
-      const step=()=>{
-        if(i>=items.length) return;
-        openWANotify(items[i]);
-        i++;
-        setTimeout(step, 600);
-      };
-      step();
+      if(items.length===0) { showToast(`Nenhum item pendente para ${carro==='argo'?'Argo':carro==='motoboy'?'Motoboy':`Carro ${carro}`}`,'info'); return; }
+      if(!confirm(`Isso vai abrir ${items.length} aba(s) do WhatsApp. Seu navegador pode bloquear. Continuar?`)) return;
+      addToHistory('Envio em lote iniciado', `${items.length} mensagens para ${carro==='argo'?'Argo':carro==='motoboy'?'Motoboy':`Carro ${carro}`}`);
+      let i=0; const step=()=>{ if(i>=items.length){ showToast(`Envio em lote concluído: ${items.length} mensagens`,'success'); return; } openWANotify(items[i]); i++; setTimeout(step, 600); }; step();
     }
-    
+
     function openSendModal(row){
-      PREVIEW_ROW=row;
-      const dlg=el('dlgSend');
-      el('dlgSendNome').textContent=row.nome;
-      el('dlgSendTel').textContent=maskPhone(row.telefone);
-      el('dlgSendMsg').value = getRowMessage(row, false);
-      el('dlgSendHora').checked = false;
-      dlg.showModal();
+      PREVIEW_ROW=row; const dlg=el('dlgSend');
+      el('dlgSendNome').textContent=row.nome; el('dlgSendTel').textContent=maskPhone(row.telefone);
+      el('dlgSendEta').value = row.etaRaw || ''; const info = parseETA(row.etaRaw);
+      el('dlgSendEtaInfo').innerHTML = info.hora ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` : '—';
+      el('dlgSendMsg').value = getRowMessage(row, false); el('dlgSendHora').checked = false; dlg.showModal();
     }
 
     // ========= CSV =========
@@ -619,216 +755,172 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`
       const header=['nome','telefone','carro','eta','servico','chamado','tecnico','mensagem','envio_enviado_em','retorno_enviado_em'];
       const rows=LIST.map(r=>[r.nome,r.telefone,r.carro,r.etaRaw,r.servico||'',r.chamado||'',r.tecnico||'',(r.msg||''),r.sentNotifyAt||'',r.sentCloseAt||'']);
       const csv=[header.join(','), ...rows.map(a=>a.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(','))].join('\n');
-      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;
-      a.download='lista-whats.csv';
-      a.click();
-      URL.revokeObjectURL(url);
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='lista-whats.csv'; a.click(); URL.revokeObjectURL(url);
+      addToHistory('CSV exportado', `${LIST.length} registros exportados`); showToast(`CSV exportado com ${LIST.length} registros`,'success');
     }
-    
     function importCSV(file){
       const reader=new FileReader();
       reader.onload=()=>{
-        const text=reader.result;
-        const lines=text.split(/\r?\n/).filter(Boolean);
-        if(lines.length<2) return alert('CSV vazio ou sem cabeçalho.');
+        const text=reader.result; const lines=text.split(/\r?\n/).filter(Boolean);
+        if(lines.length<2){ showToast('CSV vazio ou sem cabeçalho','error'); return; }
         const header=lines[0].split(',').map(h=>h.trim().toLowerCase());
         const idx=(name)=>header.indexOf(name);
         const iNome=idx('nome'), iTel=idx('telefone'), iCarro=idx('carro'), iEta=idx('eta');
         const iServ=idx('servico'), iChamado=idx('chamado'), iTec=idx('tecnico');
-        const iMsg=idx('mensagem');
-        const iSentN=idx('envio_enviado_em');
-        const iSentC=idx('retorno_enviado_em');
-        
-        if(iNome<0||iTel<0||iCarro<0) return alert('Cabeçalho deve conter: nome, telefone, carro');
-        
+        const iMsg=idx('mensagem'), iSentN=idx('envio_enviado_em'), iSentC=idx('retorno_enviado_em');
+        if(iNome<0||iTel<0||iCarro<0){ showToast('Cabeçalho deve conter: nome, telefone, carro','error'); return; }
+        let importedCount=0;
         for(let i=1;i<lines.length;i++){
-          const cols=parseCSVLine(lines[i]);
-          if(!cols.length) continue;
-          const row={
-            id:crypto.randomUUID(),
-            nome:cols[iNome]||'',
-            telefone:ensureBR(cols[iTel]||''),
-            carro:cols[iCarro]||'',
-            etaRaw:cols[iEta]||'',
-            servico:iServ>=0?(cols[iServ]||''):'',
-            chamado:iChamado>=0?(cols[iChamado]||''):'',
-            tecnico:iTec>=0?(cols[iTec]||''):'',
-            msg:iMsg>=0?(cols[iMsg]||''):undefined,
-            sentNotifyAt:iSentN>=0? Number(cols[iSentN]||'')||undefined:undefined,
-            sentCloseAt:iSentC>=0? Number(cols[iSentC]||'')||undefined:undefined,
-            selected:false
-          };
-          
-          const okTel=onlyDigits(row.telefone).length>=10;
-          const okCarro=CARROS.includes(row.carro);
-          if(row.nome && okTel && okCarro){
-            LIST.push(row)
-          }
+          const cols=parseCSVLine(lines[i]); if(!cols.length) continue;
+          const row={ id:crypto.randomUUID(), nome:cols[iNome]||'', telefone:ensureBR(cols[iTel]||''), carro:cols[iCarro]||'', etaRaw:iEta>=0?(cols[iEta]||''):'', servico:iServ>=0?(cols[iServ]||''):'', chamado:iChamado>=0?(cols[iChamado]||''):'', tecnico:iTec>=0?(cols[iTec]||''):'', msg:iMsg>=0?(cols[iMsg]||''):undefined, sentNotifyAt:iSentN>=0? Number(cols[iSentN]||'')||undefined:undefined, sentCloseAt:iSentC>=0? Number(cols[iSentC]||'')||undefined:undefined, selected:false };
+          const okTel=onlyDigits(row.telefone).length>=10; const okCarro=CARROS.includes(row.carro);
+          if(row.nome && okTel && okCarro){ LIST.push(row); importedCount++; }
         }
-        save();
-        render();
+        save(); render(); addToHistory('CSV importado', `${importedCount} registros importados`);
+        showToast(`CSV importado: ${importedCount} registros`,'success');
       }
       reader.readAsText(file,'utf-8');
     }
-    
     function parseCSVLine(line){
-      const out=[];
-      let cur='';
-      let inQuotes=false;
+      const out=[]; let cur=''; let inQuotes=false;
       for(let i=0;i<line.length;i++){
         const ch=line[i];
-        if(ch==='"'){
-          if(inQuotes && line[i+1]==='"'){
-            cur+='"';
-            i++;
-          } else {
-            inQuotes=!inQuotes
-          }
-        } else if(ch===',' && !inQuotes){
-          out.push(cur);
-          cur='';
-        } else cur+=ch
+        if(ch==='"'){ if(inQuotes && line[i+1]==='"'){ cur+='"'; i++; } else { inQuotes=!inQuotes; } }
+        else if(ch===',' && !inQuotes){ out.push(cur); cur=''; }
+        else cur+=ch;
       }
-      out.push(cur);
-      return out.map(s=>s.trim());
+      out.push(cur); return out.map(s=>s.trim());
+    }
+
+    // ========= Drag & Drop =========
+    let DRAG_ROW_ID = null;
+    function onDragStart(ev, row){
+      DRAG_ROW_ID = row.id;
+      ev.dataTransfer.setData('text/plain', row.id);
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.currentTarget.classList.add('dragging');
+    }
+    function onDragEnd(ev){
+      ev.currentTarget.classList.remove('dragging');
+      document.querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
+    }
+    function onDragOverRow(ev){
+      ev.preventDefault(); ev.dataTransfer.dropEffect = 'move';
+      const tr = ev.currentTarget; tr.classList.add('drop-target');
+    }
+    function onDropOnRow(ev, targetCarro){
+      ev.preventDefault();
+      const targetTr = ev.currentTarget;
+      targetTr.classList.remove('drop-target');
+      const targetId = targetTr.dataset.id;
+      const dragId = DRAG_ROW_ID || ev.dataTransfer.getData('text/plain');
+      if(!dragId || dragId===targetId) return;
+
+      const dragIndex = LIST.findIndex(r=>r.id===dragId);
+      const targetIndex = LIST.findIndex(r=>r.id===targetId);
+      if(dragIndex<0 || targetIndex<0) return;
+
+      // Atualiza carro do item arrastado para o carro de destino
+      LIST[dragIndex].carro = targetCarro;
+
+      // Reordena LIST em relação à posição do target
+      const [dragItem] = LIST.splice(dragIndex,1);
+      const newTargetIndex = LIST.findIndex(r=>r.id===targetId);
+      LIST.splice(newTargetIndex, 0, dragItem);
+
+      save(); render();
+      addToHistory('Item movido', `${dragItem.nome} ➜ ${targetCarro}`);
+    }
+    function onDragOverTbody(ev){
+      ev.preventDefault(); ev.dataTransfer.dropEffect = 'move';
+      ev.currentTarget.classList.add('drop-target');
+    }
+    function onDropOnTbody(ev, targetCarro){
+      ev.preventDefault();
+      const tbody = ev.currentTarget; tbody.classList.remove('drop-target');
+      const dragId = DRAG_ROW_ID || ev.dataTransfer.getData('text/plain');
+      if(!dragId) return;
+      const dragIndex = LIST.findIndex(r=>r.id===dragId);
+      if(dragIndex<0) return;
+      const [dragItem] = LIST.splice(dragIndex,1);
+      dragItem.carro = targetCarro;
+      // Inserir no final das entradas desse carro (após último índice do carro)
+      let lastIndexSameCar = -1;
+      for(let i=0;i<LIST.length;i++){ if(LIST[i].carro===targetCarro) lastIndexSameCar=i; }
+      LIST.splice(lastIndexSameCar+1, 0, dragItem);
+
+      save(); render();
+      addToHistory('Item movido', `${dragItem.nome} ➜ ${targetCarro} (final da lista)`);
     }
 
     // ========= Listeners =========
-    addEventListener('click',(e)=>{
-      const t=e.target;
-      const act=t.dataset.act;
-      if(!act) return;
-      
-      if(act==='send'){
-        const id=t.dataset.id;
-        const row=LIST.find(r=>r.id===id);
-        if(row) openSendModal(row)
-      }
-      
-      if(act==='close'){
-        const id=t.dataset.id;
-        const row=LIST.find(r=>r.id===id);
-        if(row) {
-          openWAClose(row);
-        }
-      }
-      
-      if(act==='del'){
-        const id=t.dataset.id;
-        delRow(id)
-      }
-      
-      if(act==='edit-focus'){
-        const id=t.dataset.id;
-        const textarea = document.querySelector(`textarea[data-act="edit-msg"][data-id="${id}"]`);
-        if(textarea) {
-          textarea.focus();
-        }
-      }
+    document.addEventListener('click',(e)=>{
+      const t=e.target; const act=t.dataset.act; if(!act) return;
+      if(act==='send'){ const id=t.dataset.id; const row=LIST.find(r=>r.id===id); if(row) openSendModal(row); }
+      if(act==='close'){ const id=t.dataset.id; const row=LIST.find(r=>r.id===id); if(row) openWAClose(row); }
+      if(act==='del'){ const id=t.dataset.id; delRow(id); }
     });
-    
-    addEventListener('input',(e)=>{
+
+    document.addEventListener('input',(e)=>{
       const t=e.target;
-      if(t.dataset.act==='edit-msg'){
-        const id=t.dataset.id;
-        const row=LIST.find(r=>r.id===id);
-        if(row){
-          row.msg=t.value;
-          save();
-        }
-      }
+      if(t.dataset.act==='edit-msg'){ const id=t.dataset.id; const row=LIST.find(r=>r.id===id); if(row){ row.msg=t.value; save(); } }
+      if(t.dataset.act==='edit-eta'){ const id=t.dataset.id; const row=LIST.find(r=>r.id===id); if(row){ row.etaRaw = t.value.trim(); const info = parseETA(row.etaRaw); const span = el(`eta-info-${id}`); if(span) span.innerHTML = info.hora ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` : '—'; save(); render(); } }
     });
-    
-    // Enviar por carro
+
     document.addEventListener('click', (e) => {
       if(e.target.classList.contains('enviar-carro')) {
-        const carro = e.target.dataset.carro;
-        enviarCarro(carro);
+        const carro = e.target.dataset.carro; enviarCarro(carro);
       }
     });
-    
+
     // Busca
-    el('busca').addEventListener('input', (e) => {
-      SEARCH_TERM = norm(e.target.value);
-      render();
+    el('busca').addEventListener('input', (e) => { SEARCH_TERM = norm(e.target.value); render(); });
+
+    // Toggle Dashboard (com animação)
+    el('btnToggleDash').addEventListener('click', () => {
+      const dash = el('dashBody');
+      const isHidden = dash.classList.contains('hide');
+      if(isHidden){ dash.classList.remove('hide'); dash.classList.add('show'); el('btnToggleDash').textContent='Ocultar'; }
+      else{ dash.classList.remove('show'); dash.classList.add('hide'); el('btnToggleDash').textContent='Mostrar'; }
     });
-    
+
+    // Import/Export/Reset
     el('btnImport').addEventListener('click', ()=> el('fileCSV').click());
-    el('fileCSV').addEventListener('change', (e)=>{
-      const f=e.target.files?.[0];
-      if(f) importCSV(f);
-      e.target.value='';
-    });
-    
+    el('fileCSV').addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if(f) importCSV(f); e.target.value=''; });
     el('btnExport').addEventListener('click', exportCSV);
-    el('btnLimparLista').addEventListener('click', ()=>{
-      if(!confirm('Limpar toda a lista?')) return;
-      LIST=[];
-      save();
-      render();
-    })
-    
-    el('btnAdd').addEventListener('click', ()=> addRow());
-    
-    el('btnSalvarTPL').addEventListener('click', ()=>{
-      save();
-      const b=el('btnSalvarTPL');
-      const orig=b.innerHTML;
-      b.innerHTML='✅ Salvo!';
-      setTimeout(()=> b.innerHTML=orig, 1500)
-    })
-    
-    el('btnResetTPL').addEventListener('click', ()=>{
-      if(confirm('Restaurar templates padrão?')){
-        el('template').value=defaultTemplate();
-        el('templateEnc').value=defaultEncTemplate();
-        save();
+    el('btnLimparLista').addEventListener('click', ()=>{ if(!confirm('Limpar toda a lista?')) return; const count = LIST.length; LIST=[]; save(); render(); addToHistory('Lista limpa', `${count} registros removidos`); showToast(`Lista limpa: ${count} registros removidos`,'info'); });
+    el('btnAdd').addEventListener('click', addRow);
+    el('btnSalvarTPL').addEventListener('click', ()=>{ save(); const b=el('btnSalvarTPL'); const orig=b.innerHTML; b.innerHTML='✅ Salvo!'; setTimeout(()=> b.innerHTML=orig, 1500); addToHistory('Template salvo','Modelo de mensagem atualizado'); });
+    el('btnResetTPL').addEventListener('click', ()=>{ if(confirm('Restaurar templates padrão?')){ el('template').value=defaultTemplate(); el('templateEnc').value=defaultEncTemplate(); save(); addToHistory('Template resetado','Modelos restaurados para padrão'); showToast('Templates restaurados para padrão','info'); } });
+
+    // Histórico (modal)
+    el('btnOpenHistory').addEventListener('click', ()=>{ el('dlgHistory').showModal(); renderHistory(); });
+    el('dlgHistoryClose').addEventListener('click', ()=> el('dlgHistory').close());
+    el('btnClearHistory').addEventListener('click', () => {
+      if (confirm('Limpar histórico de ações?')) {
+        ACTION_HISTORY = [];
+        localStorage.setItem('action_history', JSON.stringify(ACTION_HISTORY));
+        renderHistory();
+        showToast('Histórico limpo', 'info');
       }
-    } )
+    });
 
     // Modal envio
     el('dlgSendClose').addEventListener('click', ()=> el('dlgSend').close());
-    el('dlgSendCopy').addEventListener('click', ()=>{
-      navigator.clipboard.writeText(el('dlgSendMsg').value).then(()=> alert('Copiado!'))
-    })
-    
-    el('dlgSendConfirm').addEventListener('click', ()=>{
-      if(!PREVIEW_ROW) return;
-      const incluirHora = el('dlgSendHora').checked;
-      
-      // Se o usuário editou a mensagem na modal, respeitamos
-      const edited = el('dlgSendMsg').value.trim();
-      if(edited){
-        PREVIEW_ROW.msg = edited;
-        save();
-      }
-      
-      openWANotify(PREVIEW_ROW, incluirHora);
-      el('dlgSend').close();
-    });
-    
-    // Botão remover para reagendamento
-    el('btnReagendar').addEventListener('click', () => {
-      if(!PREVIEW_ROW) return;
-      PREVIEW_ROW.msg = ''; // Remove a mensagem para reagendamento
-      save();
-      alert('Mensagem removida para reagendamento. Você pode editar a mensagem manualmente.');
-      el('dlgSend').close();
-      render();
-    });
-    
-    // Atualizar mensagem quando checkbox de hora for alterado
-    el('dlgSendHora').addEventListener('change', ()=>{
-      if(!PREVIEW_ROW) return;
-      const incluirHora = el('dlgSendHora').checked;
-      el('dlgSendMsg').value = getRowMessage(PREVIEW_ROW, incluirHora);
-    });
+    el('dlgSendCopy').addEventListener('click', ()=>{ navigator.clipboard.writeText(el('dlgSendMsg').value).then(()=> { showToast('Mensagem copiada para a área de transferência','success'); }); });
+    el('dlgSendHora').addEventListener('change', ()=>{ if(!PREVIEW_ROW) return; const incluirHora = el('dlgSendHora').checked; el('dlgSendMsg').value = getRowMessage(PREVIEW_ROW, incluirHora); });
+    el('dlgSendEta').addEventListener('input', ()=>{ if(!PREVIEW_ROW) return; PREVIEW_ROW.etaRaw = el('dlgSendEta').value.trim(); const info = parseETA(PREVIEW_ROW.etaRaw); el('dlgSendEtaInfo').innerHTML = info.hora ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` : '—'; if(el('dlgSendHora').checked){ el('dlgSendMsg').value = getRowMessage(PREVIEW_ROW, true); } save(); render(); });
+    el('dlgSendConfirm').addEventListener('click', ()=>{ if(!PREVIEW_ROW) return; const incluirHora = el('dlgSendHora').checked; const edited = el('dlgSendMsg').value.trim(); if(edited){ PREVIEW_ROW.msg = edited; save(); } openWANotify(PREVIEW_ROW, incluirHora); el('dlgSend').close(); });
+    el('btnReagendar').addEventListener('click', ()=>{ if(!PREVIEW_ROW) return; delRow(PREVIEW_ROW.id); el('dlgSend').close(); });
 
-    // Init
-    addEventListener('DOMContentLoaded', load);
+    // Boot
+    window.addEventListener('DOMContentLoaded', () => {
+      // recolher templates por padrão
+      const d = document.getElementById('tplDetails');
+      if (d && d.hasAttribute('open')) d.removeAttribute('open');
+      load();
+    });
   </script>
 </body>
 </html>

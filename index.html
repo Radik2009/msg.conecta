@@ -8,59 +8,175 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- SheetJS for Excel import/export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    :root{--brand:#10b981;--brand-2:#059669}
-    body{font-family:'Inter',sans-serif}
-    .gradient-bg{background:linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%)}
-    .card-shadow{box-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06)}
-    .btn-primary{background:linear-gradient(135deg,var(--brand) 0%,var(--brand-2) 100%);transition:all .2s ease}
-    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(16,185,129,.4)}
-    .btn-secondary{transition:all .2s ease}
-    .btn-secondary:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
-    .status-chip{transition:all .2s ease}
-    .status-chip:hover{transform:scale(1.05)}
-    .fade-in{animation:fadeIn .25s ease-in-out}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .sticky-header{position:sticky;top:0;z-index:10;background-color:rgba(255,255,255,.95);backdrop-filter:blur(8px)}
-    .nowrap{white-space:nowrap}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-    textarea{resize:vertical}
-    dialog::backdrop{background:rgba(0,0,0,.25)}
-    .row-expand{transition:max-height .25s ease, opacity .2s ease}
-    .row-expand[aria-hidden="true"]{max-height:0;opacity:0;overflow:hidden}
-    .row-expand[aria-hidden="false"]{max-height:800px;opacity:1}
-    .row-summary{cursor:pointer}
-    .sticky-actions{position:sticky;right:0;background:#fff}
-    .dashboard-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-    @media (max-width:1024px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:640px){.dashboard-grid{grid-template-columns:1fr}}
-    .kpi{border:1px solid #e5e7eb;border-radius:14px;padding:14px;background:#fff}
-    .kpi .v{font-weight:800;font-size:22px}
-    .kpi .l{font-size:12px;color:#6b7280}
-    .toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:8px;color:white;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);transform:translateY(100px);opacity:0;transition:all 0.3s ease;}
-    .toast.show{transform:translateY(0);opacity:1;}
-    .toast.success{background-color:#10b981;}
-    .toast.error{background-color:#ef4444;}
-    .toast.info{background-color:#3b82f6;}
-    .progress-bar{height:4px;background-color:#e5e7eb;border-radius:2px;overflow:hidden;margin-top:8px;}
-    .progress-fill{height:100%;background-color:#10b981;transition:width 0.3s ease;}
-    .history-item{border-left:3px solid #10b981;padding-left:12px;margin-bottom:8px;}
-    .history-item.error{border-left-color:#ef4444;}
-    .history-item.warning{border-left-color:#f59e0b;}
-    .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:loading 1.5s infinite;}
-    @keyframes loading{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
-    .auto-save-indicator{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#6b7280;}
-    .auto-save-indicator.saving .dot{animation:pulse 1.5s infinite;}
-    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
-    .dot{width:6px;height:6px;border-radius:50%;background-color:#10b981;}
-    /* Colapso com animação */
-    .collapse{overflow:hidden;transition:max-height .35s ease, opacity .25s ease}
-    .collapse.hide{max-height:0;opacity:0}
-    .collapse.show{max-height:1200px;opacity:1}
-    /* Drag & Drop */
-    .dragging{opacity:.5}
-    .drop-target{outline:2px dashed #10b981; outline-offset:-2px; background:#f0fdf4}
-    .drop-zone{min-height:10px}
+    :root {
+      --brand: #10b981;
+      --brand-2: #059669;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    }
+    
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+      transition: all .2s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16,185,129,.4);
+    }
+    
+    .btn-secondary {
+      transition: all .2s ease;
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+    
+    .status-chip {
+      transition: all .2s ease;
+    }
+    
+    .status-chip:hover {
+      transform: scale(1.05);
+    }
+    
+    .fade-in {
+      animation: fadeIn .25s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: rgba(255,255,255,.95);
+      backdrop-filter: blur(8px);
+    }
+    
+    .nowrap {
+      white-space: nowrap;
+    }
+    
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    
+    textarea {
+      resize: vertical;
+    }
+    
+    dialog::backdrop {
+      background: rgba(0,0,0,.25);
+    }
+    
+    .row-expand {
+      transition: max-height .25s ease, opacity .2s ease;
+    }
+    
+    .row-expand[aria-hidden="true"] {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+    }
+    
+    .row-expand[aria-hidden="false"] {
+      max-height: 800px;
+      opacity: 1;
+    }
+    
+    .row-summary {
+      cursor: pointer;
+    }
+    
+    .sticky-actions {
+      position: sticky;
+      right: 0;
+      background: #fff;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: white;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast.success {
+      background-color: #10b981;
+    }
+    
+    .toast.error {
+      background-color: #ef4444;
+    }
+    
+    .toast.info {
+      background-color: #3b82f6;
+    }
+    
+    .history-item {
+      border-left: 3px solid #10b981;
+      padding-left: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .history-item.error {
+      border-left-color: #ef4444;
+    }
+    
+    .history-item.warning {
+      border-left-color: #f59e0b;
+    }
+    
+    .dragging {
+      opacity: .5;
+    }
+    
+    .drop-target {
+      outline: 2px dashed #10b981;
+      outline-offset: -2px;
+      background: #f0fdf4;
+    }
+    
+    .drop-zone {
+      min-height: 10px;
+    }
+    
+    mark {
+      background-color: #fef08a;
+      padding: 0.1rem 0.2rem;
+      border-radius: 0.25rem;
+    }
   </style>
 </head>
 <body class="gradient-bg text-gray-900 min-h-screen">
@@ -70,7 +186,9 @@
     <header class="flex items-center justify-between gap-4 flex-wrap bg-white rounded-2xl card-shadow p-5 sticky-header">
       <div class="flex items-center gap-3">
         <div class="bg-emerald-100 p-2 rounded-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-600" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/>
+          </svg>
         </div>
         <div>
           <h1 class="text-2xl font-bold text-gray-800">Notificação ao Cliente</h1>
@@ -78,33 +196,70 @@
         </div>
       </div>
       <div class="flex flex-wrap gap-2 items-center">
-        <!-- Botão Histórico (abre modal) -->
         <button id="btnOpenHistory" class="rounded-xl border border-gray-300 px-3 py-2 bg-white hover:bg-gray-50 font-medium flex items-center gap-2" title="Histórico de ações (log)">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
           Histórico
         </button>
-        <button id="btnImport" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
-          Importar CSV
+
+        <!-- Excel import/export -->
+        <button id="btnImportXLSX" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+          </svg>
+          Importar Excel
         </button>
-        <button id="btnExport" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          Exportar CSV
+        <button id="btnExportXLSX" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Exportar Excel
         </button>
         <button id="btnLimparLista" class="rounded-xl border border-red-300 px-4 py-2.5 bg-white hover:bg-red-50 text-red-600 font-medium flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
           Limpar lista
         </button>
-        <input id="fileCSV" type="file" accept=".csv,text/csv" class="hidden" />
+        <input id="fileXLSX" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" />
       </div>
     </header>
 
-    <!-- Configuração de Templates (recolhível) -->
+    <!-- Integração Airtable -->
+    <section class="bg-white rounded-2xl card-shadow p-6 fade-in">
+      <details open>
+        <summary class="list-none px-1 py-2 cursor-pointer flex items-center justify-between">
+          <span class="font-bold text-lg text-gray-800">Integração com Airtable</span>
+          <span class="text-sm text-gray-500">clique para configurar</span>
+        </summary>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Base ID</label>
+            <input id="airtableBaseId" class="w-full rounded-xl border border-gray-300 px-4 py-2.5" value="app6PQ0NV8WKc1Ztx" placeholder="appxxxxxxxxxxxxxx">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">API Key</label>
+            <input id="airtableApiKey" class="w-full rounded-xl border border-gray-300 px-4 py-2.5" value="pateTw2zJZUvUDRjn" placeholder="patxxxxxxxxxxxxxx">
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button id="btnPullAirtable" class="rounded-lg border px-3 py-2 bg-white hover:bg-gray-50">Buscar do Airtable</button>
+          <button id="btnPushAirtable" class="btn-primary rounded-lg text-white px-4 py-2">Enviar p/ Airtable</button>
+          <button id="btnTestAirtable" class="rounded-lg border border-blue-300 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100">Testar Conexão</button>
+        </div>
+        <p class="text-xs text-gray-500 mt-2" id="airtableStatus">Status: Não testado</p>
+      </details>
+    </section>
+
+    <!-- Configuração de Templates -->
     <section class="bg-white rounded-2xl card-shadow p-0 fade-in overflow-hidden">
       <details id="tplDetails">
         <summary class="list-none px-6 py-4 cursor-pointer flex items-center justify-between">
           <span class="font-bold text-lg text-gray-800 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
             Configuração de Templates
           </span>
           <span class="text-sm text-gray-500">clique para expandir</span>
@@ -126,11 +281,15 @@
             </div>
             <div class="flex flex-col gap-2 shrink-0">
               <button id="btnSalvarTPL" class="btn-primary rounded-xl px-4 py-2.5 text-white font-medium flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
                 Salvar padrão
               </button>
               <button id="btnResetTPL" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
                 Restaurar padrão
               </button>
             </div>
@@ -149,10 +308,12 @@
     <!-- Form para adicionar linhas -->
     <section class="bg-white rounded-2xl card-shadow p-6 space-y-5 fade-in">
       <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
         Adicionar à lista (somente cadastro)
       </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 items-end">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-4 items-end">
         <div>
           <label for="nome" class="block text-sm font-medium mb-2 text-gray-700">Nome</label>
           <input id="nome" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Ex.: Maria Souza" />
@@ -190,69 +351,29 @@
           <label for="tecnico" class="block text-sm font-medium mb-2 text-gray-700">Técnico (opcional)</label>
           <input id="tecnico" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Leandro" />
         </div>
-      </div>
-      <div class="flex gap-3">
-        <button id="btnAdd" class="btn-primary rounded-xl px-5 py-2.5 text-white font-medium flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-          Adicionar à lista
-        </button>
-      </div>
-    </section>
-
-    <!-- DASHBOARD -->
-    <section class="bg-white rounded-2xl card-shadow p-6 fade-in">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
-          </svg>
-          Dashboard
-        </h2>
-        <div class="flex items-center gap-2">
-          <span id="autoSaveIndicator" class="auto-save-indicator"><span class="dot"></span> Pronto</span>
-          <button id="btnToggleDash" class="rounded-lg border px-3 py-2 bg-white hover:bg-gray-50 text-sm">Ocultar</button>
-        </div>
-      </div>
-      <div id="dashBody" class="collapse show">
-        <!-- KPIs -->
-        <div class="dashboard-grid mb-6">
-          <div class="kpi"><div class="l">Cadastrados</div><div id="kpi-total" class="v">0</div></div>
-          <div class="kpi"><div class="l">Informados (enviados)</div><div id="kpi-informados" class="v">0</div></div>
-          <div class="kpi"><div class="l">Pendentes de envio</div><div id="kpi-pendentes" class="v">0</div></div>
-          <div class="kpi"><div class="l">Encerrados</div><div id="kpi-encerrados" class="v">0</div></div>
-        </div>
-
-        <!-- Por carro -->
-        <div class="overflow-x-auto rounded-xl border border-gray-200 mb-6">
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="bg-gray-50 text-gray-700 border-b border-gray-200">
-                <th class="p-3 text-left font-semibold">Carro</th>
-                <th class="p-3 text-left font-semibold">Total</th>
-                <th class="p-3 text-left font-semibold">Informados</th>
-                <th class="p-3 text-left font-semibold">Encerrados</th>
-              </tr>
-            </thead>
-            <tbody id="dash-carros"></tbody>
-          </table>
-        </div>
-
-        <!-- Encerrados recentes -->
-        <div>
-          <h3 class="font-semibold text-gray-800 mb-2">Encerrados recentes</h3>
-          <ul id="dash-recentes" class="space-y-2 text-sm"></ul>
+        <div class="flex gap-3">
+          <button id="btnAdd" class="btn-primary rounded-xl px-5 py-2.5 text-white font-medium flex items-center gap-2 self-end">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Adicionar à lista
+          </button>
         </div>
       </div>
     </section>
 
-    <!-- BUSCA (acima da lista) -->
+    <!-- BUSCA -->
     <section id="sec-busca" class="bg-white rounded-2xl card-shadow p-6 fade-in">
       <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
         Buscar
       </h2>
       <div class="relative">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
         <input id="busca" type="text" class="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Buscar por nome, chamado, telefone, serviço, técnico..." />
       </div>
       <p class="text-xs text-gray-500 mt-2">A busca filtra e só mostra as seções com resultados.</p>
@@ -261,7 +382,7 @@
     <!-- Lista de envios por carro -->
     <section id="lista-carros" class="space-y-4"></section>
 
-    <footer class="text-center text-xs text-gray-500 py-4">Sem servidor. Para envio 100% automático (sem confirmação) ou <b>com fotos</b>, use WhatsApp Cloud API + backend.</footer>
+    <footer class="text-center text-xs text-gray-500 py-4">Sistema Smart Conecta • Dados salvos localmente + Airtable</footer>
   </main>
 
   <!-- Modal Envio -->
@@ -323,8 +444,8 @@
 
   <script>
     // ========= Utils =========
-    const el = (id)=>document.getElementById(id);
-    const onlyDigits = (s)=> (s||'').replace(/\D+/g,'');
+    const el = (id) => document.getElementById(id);
+    const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
     const BR_PREFIX = '55';
 
     // Sistema de histórico
@@ -338,6 +459,7 @@
       localStorage.setItem('action_history', JSON.stringify(ACTION_HISTORY));
       renderHistory();
     }
+
     function renderHistory() {
       const historyList = el('history-list');
       if (!historyList) return;
@@ -360,7 +482,6 @@
       });
     }
 
-    // Toast
     function showToast(message, type = 'info', duration = 3000) {
       const toast = el('toast');
       toast.textContent = message;
@@ -369,25 +490,16 @@
       setTimeout(() => toast.classList.remove('show'), duration);
     }
 
-    // Indicador de salvamento
-    function showAutoSaveIndicator(show) {
-      const indicator = el('autoSaveIndicator');
-      if (!indicator) return;
-      if (show) {
-        indicator.classList.add('saving');
-        indicator.innerHTML = '<span class="dot"></span> Salvando...';
-      } else {
-        indicator.classList.remove('saving');
-        indicator.innerHTML = '<span class="dot"></span> Salvo';
-        setTimeout(() => { indicator.innerHTML = '<span class="dot"></span> Pronto'; }, 2000);
-      }
-    }
-
-    // Backup
     function createBackup() {
-      const backupData = { lista: LIST, template: el('template').value, templateEnc: el('templateEnc').value, timestamp: Date.now() };
+      const backupData = { 
+        lista: LIST, 
+        template: el('template').value, 
+        templateEnc: el('templateEnc').value, 
+        timestamp: Date.now() 
+      };
       localStorage.setItem('backup_data', JSON.stringify(backupData));
     }
+
     function restoreBackup() {
       try {
         const backupData = JSON.parse(localStorage.getItem('backup_data') || '{}');
@@ -395,94 +507,91 @@
           LIST = backupData.lista;
           el('template').value = backupData.template;
           el('templateEnc').value = backupData.templateEnc || defaultEncTemplate();
-          save(); render();
+          save(); 
+          render();
           showToast('Backup restaurado com sucesso', 'success');
           addToHistory('Backup restaurado', 'Dados restaurados do backup automático');
         }
-      } catch (e) { console.error('Erro ao restaurar backup:', e); }
-    }
-
-    function computeStats() {
-      const total = LIST.length;
-      const informados = LIST.filter(r => !!r.sentNotifyAt).length;
-      const encerrados = LIST.filter(r => !!r.sentCloseAt).length;
-      const pendentes = total - informados;
-      const porCarro = CARROS.map(c => {
-        const rows = LIST.filter(r => r.carro === c);
-        return { carro: c, total: rows.length, informados: rows.filter(r => !!r.sentNotifyAt).length, encerrados: rows.filter(r => !!r.sentCloseAt).length };
-      }).filter(x => x.total > 0);
-      const recentes = LIST.filter(r => !!r.sentCloseAt).sort((a,b)=>b.sentCloseAt-a.sentCloseAt).slice(0,8)
-        .map(r => ({ nome:r.nome, chamado:r.chamado||'—', carro:r.carro, quando: fromNow(r.sentCloseAt) }));
-      return { total, informados, encerrados, pendentes, porCarro, recentes };
-    }
-
-    function renderDashboard() {
-      const d = computeStats();
-      el('kpi-total').textContent = String(d.total);
-      el('kpi-informados').textContent = String(d.informados);
-      el('kpi-pendentes').textContent = String(d.pendentes);
-      el('kpi-encerrados').textContent = String(d.encerrados);
-      const tbody = el('dash-carros'); tbody.innerHTML = '';
-      d.porCarro.forEach(item => {
-        const label = (item.carro === 'argo') ? 'Argo' : (item.carro === 'motoboy' ? 'Motoboy' : `Carro ${item.carro}`);
-        const tr = document.createElement('tr');
-        tr.className = 'border-b border-gray-100';
-        tr.innerHTML = `<td class="p-3">${label}</td><td class="p-3">${item.total}</td><td class="p-3">${item.informados}</td><td class="p-3">${item.encerrados}</td>`;
-        tbody.appendChild(tr);
-      });
-      const ul = el('dash-recentes'); ul.innerHTML = '';
-      if (d.recentes.length === 0) {
-        ul.innerHTML = `<li class="text-gray-500">Nenhum encerramento ainda.</li>`;
-      } else {
-        d.recentes.forEach(rec => {
-          const li = document.createElement('li');
-          li.className = 'bg-gray-50 border border-gray-200 rounded-lg p-3';
-          const label = (rec.carro === 'argo') ? 'Argo' : (rec.carro === 'motoboy' ? 'Motoboy' : `Carro ${rec.carro}`);
-          li.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-2">
-              <div><span class="font-medium">${escapeHtml(rec.nome)}</span>
-              <span class="text-gray-500"> • Chamado: ${escapeHtml(rec.chamado)}</span>
-              <span class="text-gray-500"> • ${label}</span></div>
-              <span class="text-xs text-gray-600">${rec.quando}</span></div>`;
-          ul.appendChild(li);
-        });
+      } catch (e) { 
+        console.error('Erro ao restaurar backup:', e); 
       }
     }
 
     function ensureBR(msisdn){
-      let d=onlyDigits(msisdn).replace(/^0+/,''); return d.startsWith(BR_PREFIX)? d : (BR_PREFIX+d);
+      let d = onlyDigits(msisdn).replace(/^0+/, ''); 
+      return d.startsWith(BR_PREFIX) ? d : (BR_PREFIX + d);
     }
-    function toHHMM(date){ const d=new Date(date); return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',hour12:false}); }
+    
+    function toHHMM(date){ 
+      const d = new Date(date); 
+      return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false }); 
+    }
+    
     function parseETA(raw){
-      const t=(raw||'').trim(); if(!t) return {hora:'', minutos:'', minsNum:null};
-      if(/\d{1,2}:\d{2}/.test(t)){
-        const [h,m]=t.split(':').map(Number); const now=new Date(); const est=new Date(now);
-        est.setHours(h,m,0,0); if(est<now) est.setDate(est.getDate()+1);
-        const diff=Math.max(0, Math.round((est-now)/60000));
-        return {hora: toHHMM(est), minutos: `${diff}min`, minsNum: diff};
+      const t = (raw || '').trim(); 
+      if (!t) return { hora: '', minutos: '', minsNum: null };
+      
+      if (/\d{1,2}:\d{2}/.test(t)) {
+        const [h, m] = t.split(':').map(Number); 
+        const now = new Date(); 
+        const est = new Date(now);
+        est.setHours(h, m, 0, 0); 
+        if (est < now) est.setDate(est.getDate() + 1);
+        const diff = Math.max(0, Math.round((est - now) / 60000));
+        return { hora: toHHMM(est), minutos: `${diff}min`, minsNum: diff };
       }
-      const mins=parseInt(t,10);
-      if(Number.isFinite(mins)){ const est=new Date(Date.now()+mins*60000); return {hora: toHHMM(est), minutos: `${mins}min`, minsNum: mins}; }
-      return {hora:'', minutos:'', minsNum:null};
+      
+      const mins = parseInt(t, 10);
+      if (Number.isFinite(mins)) { 
+        const est = new Date(Date.now() + mins * 60000); 
+        return { hora: toHHMM(est), minutos: `${mins}min`, minsNum: mins }; 
+      }
+      
+      return { hora: '', minutos: '', minsNum: null };
     }
-    function renderTemplate(tpl, ctx){ return tpl.replace(/\{\{(.*?)\}\}/g, (_,k)=> (ctx[k.trim()] ?? '')); }
-    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
+    
+    function renderTemplate(tpl, ctx) { 
+      return tpl.replace(/\{\{(.*?)\}\}/g, (_, k) => (ctx[k.trim()] ?? '')); 
+    }
+    
+    function escapeHtml(s) { 
+      const div = document.createElement('div');
+      div.textContent = s || '';
+      return div.innerHTML;
+    }
+    
     function highlightText(text, searchTerm) {
-      if (!searchTerm) return escapeHtml(text||''); const escaped = escapeHtml(text||'');
-      const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')})`,'gi'); return escaped.replace(regex,'<mark class="bg-yellow-100 rounded px-0.5">$1</mark>');
+      if (!searchTerm || !text) return escapeHtml(text || '');
+      const escaped = escapeHtml(text);
+      const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      return escaped.replace(regex, '<mark class="bg-yellow-100 rounded px-0.5">$1</mark>');
     }
+    
     function fromNow(ts){
-      if(!ts) return ''; const diff=Date.now()-ts; const m=Math.floor(diff/60000);
-      if(m<1) return 'agora'; if(m<60) return `há ${m} min`; const h=Math.floor(m/60); if(h<24) return `há ${h} h`;
-      const d=Math.floor(h/24); return `há ${d} d`;
+      if (!ts) return '';
+      const diff = Date.now() - ts;
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return 'agora';
+      if (m < 60) return `há ${m} min`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `há ${h} h`;
+      const d = Math.floor(h / 24);
+      return `há ${d} d`;
     }
+    
     function maskPhone(v){
-      const d=onlyDigits(v);
-      if(d.startsWith('55') && d.length>=13){ const pais=d.slice(0,2), ddd=d.slice(2,4), pre=d.slice(4,9), suf=d.slice(9,13); return `+${pais} (${ddd}) ${pre}-${suf}`; }
-      if(d.length>=10){ const ddd=d.slice(0,2), pre=d.slice(2,7), suf=d.slice(7,11); return `(${ddd}) ${pre}-${suf}`; }
+      const d = onlyDigits(v);
+      if (d.startsWith('55') && d.length >= 13) {
+        const pais = d.slice(0, 2), ddd = d.slice(2, 4), pre = d.slice(4, 9), suf = d.slice(9, 13);
+        return `+${pais} (${ddd}) ${pre}-${suf}`;
+      }
+      if (d.length >= 10) {
+        const ddd = d.slice(0, 2), pre = d.slice(2, 7), suf = d.slice(7, 11);
+        return `(${ddd}) ${pre}-${suf}`;
+      }
       return d;
     }
 
-    // ========= Templates =========
     function defaultTemplate(){
       return `Olá, {{nome}}! 👋
 
@@ -494,6 +603,7 @@
 
 Se precisar tirar dúvidas, pode responder por aqui. Estamos à disposição. ✅`;
     }
+    
     function defaultEncTemplate(){
       return `✅ Serviço concluído, {{nome}}!
 
@@ -504,72 +614,140 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     }
 
     // ========= Estado =========
-    let LIST=[]; const CARROS = ['51','84','30','96','97','argo','motoboy'];
-    let PREVIEW_ROW=null; let SEARCH_TERM='';
+    let LIST = [];
+    const CARROS = ['51', '84', '30', '96', '97', 'argo', 'motoboy'];
+    let PREVIEW_ROW = null;
+    let SEARCH_TERM = '';
 
     function save() {
-      showAutoSaveIndicator(true);
-      try{
+      try {
         localStorage.setItem('lista_envio_whats_webonly', JSON.stringify(LIST));
         localStorage.setItem('tpl_envio_whats_webonly', el('template').value);
         localStorage.setItem('tpl_enc_whats_webonly', el('templateEnc').value);
         createBackup();
-        renderDashboard();
-        setTimeout(()=>showAutoSaveIndicator(false), 500);
-      }catch(e){ showToast('Erro ao salvar dados','error'); console.error(e); }
+      } catch (e) { 
+        showToast('Erro ao salvar dados', 'error'); 
+        console.error(e); 
+      }
     }
+    
     function load() {
-      try{ LIST=JSON.parse(localStorage.getItem('lista_envio_whats_webonly')||'[]')||[] }catch{ LIST=[]; restoreBackup(); }
-      try{ ACTION_HISTORY = JSON.parse(localStorage.getItem('action_history') || '[]') }catch{ ACTION_HISTORY=[] }
+      try { 
+        LIST = JSON.parse(localStorage.getItem('lista_envio_whats_webonly') || '[]') || []; 
+      } catch { 
+        LIST = []; 
+        restoreBackup(); 
+      }
+      
+      try { 
+        ACTION_HISTORY = JSON.parse(localStorage.getItem('action_history') || '[]'); 
+      } catch { 
+        ACTION_HISTORY = []; 
+      }
+      
       el('template').value = localStorage.getItem('tpl_envio_whats_webonly') || defaultTemplate();
       el('templateEnc').value = localStorage.getItem('tpl_enc_whats_webonly') || defaultEncTemplate();
-      render(); renderHistory();
+      render(); 
+      renderHistory();
     }
 
     // ========= WA =========
-    function buildWAUrl(numero, msg){ const enc=encodeURIComponent((msg&&msg.trim())?msg:' '); return `https://web.whatsapp.com/send?phone=${numero}&text=${enc}` }
-    function openURL(url){ const w=window.open(url,'_blank'); if(!w){ window.location.href=url } }
-    function getRowMessage(row, incluirHora=false){
-      const {hora,minutos}=parseETA(incluirHora ? row.etaRaw : '');
-      const tpl=el('template').value||defaultTemplate();
-      const fallback=renderTemplate(tpl,{ nome:row.nome, telefone:row.telefone, hora: incluirHora ? hora : '', minutos: incluirHora ? minutos : '', servico:row.servico||'', chamado:row.chamado||'', tecnico:row.tecnico||'' }).trim();
-      const msg=(typeof row.msg==='string'? row.msg.trim(): fallback);
-      return msg||fallback;
+    function buildWAUrl(numero, msg) { 
+      const enc = encodeURIComponent((msg && msg.trim()) ? msg : ' '); 
+      return `https://web.whatsapp.com/send?phone=${numero}&text=${enc}`; 
     }
-    function getCloseMessage(row){
-      const tpl=el('templateEnc').value||defaultEncTemplate(); const {hora,minutos}=parseETA(row.etaRaw);
-      return renderTemplate(tpl,{ nome:row.nome, telefone:row.telefone, hora, minutos, servico:row.servico||'', chamado:row.chamado||'', tecnico:row.tecnico||'' }).trim();
+    
+    function openURL(url) { 
+      const w = window.open(url, '_blank'); 
+      if (!w) { 
+        window.location.href = url; 
+      } 
     }
-    function openWANotify(row, incluirHora=false){
-      const msg=getRowMessage(row,incluirHora); const numero=ensureBR(row.telefone); openURL(buildWAUrl(numero,msg));
-      row.sentNotifyAt=Date.now(); save(); render();
-      addToHistory('Notificação enviada', `Para ${row.nome} (${maskPhone(row.telefone)})`); showToast(`Notificação enviada para ${row.nome}`,'success');
+    
+    function getRowMessage(row, incluirHora = false) {
+      const { hora, minutos } = parseETA(incluirHora ? row.etaRaw : '');
+      const tpl = el('template').value || defaultTemplate();
+      const fallback = renderTemplate(tpl, { 
+        nome: row.nome, 
+        telefone: row.telefone, 
+        hora: incluirHora ? hora : '', 
+        minutos: incluirHora ? minutos : '', 
+        servico: row.servico || '', 
+        chamado: row.chamado || '', 
+        tecnico: row.tecnico || '' 
+      }).trim();
+      const msg = (typeof row.msg === 'string' ? row.msg.trim() : fallback);
+      return msg || fallback;
     }
-    function openWAClose(row){
-      const msg=getCloseMessage(row)||defaultEncTemplate(); const numero=ensureBR(row.telefone); openURL(buildWAUrl(numero,msg));
-      row.sentCloseAt=Date.now(); save(); render();
-      addToHistory('Encerramento enviado', `Para ${row.nome} (${maskPhone(row.telefone)})`); showToast(`Encerramento enviada para ${row.nome}`,'success');
+    
+    function getCloseMessage(row) {
+      const tpl = el('templateEnc').value || defaultEncTemplate(); 
+      const { hora, minutos } = parseETA(row.etaRaw);
+      return renderTemplate(tpl, { 
+        nome: row.nome, 
+        telefone: row.telefone, 
+        hora, 
+        minutos, 
+        servico: row.servico || '', 
+        chamado: row.chamado || '', 
+        tecnico: row.tecnico || '' 
+      }).trim();
+    }
+    
+    function openWANotify(row, incluirHora = false) {
+      const msg = getRowMessage(row, incluirHora); 
+      const numero = ensureBR(row.telefone); 
+      openURL(buildWAUrl(numero, msg));
+      row.sentNotifyAt = Date.now(); 
+      save(); 
+      render();
+      addToHistory('Notificação enviada', `Para ${row.nome} (${maskPhone(row.telefone)})`); 
+      showToast(`Notificação enviada para ${row.nome}`, 'success');
+    }
+    
+    function openWAClose(row) {
+      const msg = getCloseMessage(row) || defaultEncTemplate(); 
+      const numero = ensureBR(row.telefone); 
+      openURL(buildWAUrl(numero, msg));
+      row.sentCloseAt = Date.now(); 
+      save(); 
+      render();
+      addToHistory('Encerramento enviado', `Para ${row.nome} (${maskPhone(row.telefone)})`); 
+      showToast(`Encerramento enviado para ${row.nome}`, 'success');
     }
 
-    // ========= Render =========
-    function statusChips(row){
+    // ========= Status chips =========
+    function statusChips(row) {
       const envio = row.sentNotifyAt
         ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 status-chip">Envio ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentNotifyAt)}</span></span>`
         : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip">Envio pendente</span>`;
+        
       const retorno = row.sentCloseAt
         ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 status-chip">Retorno ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentCloseAt)}</span></span>`
         : (row.sentNotifyAt
           ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200 status-chip">Retorno pendente</span>`
           : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip">Retorno —</span>`);
+          
       return `<div class="flex flex-wrap gap-1">${envio}${retorno}</div>`;
     }
-    function norm(s){ return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+    
+    function norm(s) { 
+      return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); 
+    }
 
-    function renderCarroSection(carro){
+    // ========= Render por carro =========
+    function renderCarroSection(carro) {
       const carroId = carro.toLowerCase().replace(/\s+/g, '-');
       const carroRows = LIST.filter(r => r.carro === carro);
-      if (carroRows.length === 0) { const existing = el(`carro-${carroId}`); if (existing) existing.remove(); return; }
+      
+      // Remove seção se não há registros
+      if (carroRows.length === 0) { 
+        const existing = el(`carro-${carroId}`);
+        if (existing) existing.remove(); 
+        return; 
+      }
 
+      // Filtra por termo de busca
       const filteredRows = SEARCH_TERM ? carroRows.filter(row =>
         norm(row.nome).includes(SEARCH_TERM) ||
         norm(row.chamado).includes(SEARCH_TERM) ||
@@ -578,8 +756,14 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         norm(row.tecnico).includes(SEARCH_TERM)
       ) : carroRows;
 
-      if (filteredRows.length === 0) { const existing = el(`carro-${carroId}`); if (existing) existing.remove(); return; }
+      // Remove seção se não há resultados filtrados
+      if (filteredRows.length === 0) { 
+        const existing = el(`carro-${carroId}`);
+        if (existing) existing.remove(); 
+        return; 
+      }
 
+      // Cria ou atualiza a seção
       let section = el(`carro-${carroId}`);
       if (!section) {
         section = document.createElement('div');
@@ -587,19 +771,26 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         section.className = 'bg-white rounded-2xl card-shadow p-6 fade-in carro-section';
         el('lista-carros').appendChild(section);
       }
+      
       const displayName = carro === 'argo' ? 'Argo' : carro === 'motoboy' ? 'Motoboy' : `Carro ${carro}`;
 
       section.innerHTML = `
         <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
           <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
             ${displayName}
           </h2>
           <div class="flex items-center gap-2 flex-wrap ml-auto">
-            <span id="resumo-${carroId}" class="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg font-medium">${filteredRows.length} ${filteredRows.length === 1 ? 'item' : 'itens'}</span>
+            <span id="resumo-${carroId}" class="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg font-medium">
+              ${filteredRows.length} ${filteredRows.length === 1 ? 'item' : 'itens'}
+            </span>
           </div>
           <button data-carro="${carro}" class="btn-primary rounded-xl px-4 py-2.5 text-white font-medium flex items-center gap-2 enviar-carro">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+            </svg>
             Enviar todos
           </button>
         </div>
@@ -612,6 +803,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
                 <th class="p-3 text-left font-semibold">Telefone</th>
                 <th class="p-3 text-left font-semibold">Chamado</th>
                 <th class="p-3 text-left font-semibold">Previsto</th>
+                <th class="p-3 text-left font-semibold">Status</th>
                 <th class="p-3 text-left font-semibold sticky-actions">Ações</th>
               </tr>
             </thead>
@@ -620,22 +812,26 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         </div>
       `;
 
-      const tbody = el(`tbody-${carroId}`); tbody.innerHTML = '';
+      const tbody = el(`tbody-${carroId}`); 
+      tbody.innerHTML = '';
 
-      for(const row of filteredRows){
-        const {hora,minutos, minsNum}=parseETA(row.etaRaw);
-        const resumoPrev = hora ? `<span class='font-medium'>${hora}</span> <span class='text-gray-500 text-xs'>(${minutos})</span>` : '<span class="text-gray-400 text-xs">—</span>';
+      for (const row of filteredRows) {
+        const { hora, minutos, minsNum } = parseETA(row.etaRaw);
+        const resumoPrev = hora 
+          ? `<span class='font-medium'>${hora}</span> <span class='text-gray-500 text-xs'>(${minutos})</span>` 
+          : '<span class="text-gray-400 text-xs">—</span>';
 
-        // Linha RESUMO (draggable + ações sempre visíveis)
+        // Linha RESUMO (draggable + ações + STATUS visível)
         const tr = document.createElement('tr');
-        tr.className='border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 row-summary';
-        tr.dataset.id=row.id;
-        tr.setAttribute('draggable','true');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 row-summary';
+        tr.dataset.id = row.id;
+        tr.setAttribute('draggable', 'true');
         tr.innerHTML = `
           <td class="p-3 font-medium">${highlightText(row.nome, SEARCH_TERM)}</td>
           <td class="p-3 mono">${highlightText(maskPhone(row.telefone), SEARCH_TERM)}</td>
           <td class="p-3">${highlightText(row.chamado || '', SEARCH_TERM)}</td>
           <td class="p-3">${resumoPrev}</td>
+          <td class="p-3 min-w-[220px]">${statusChips(row)}</td>
           <td class="p-3 sticky-actions">
             <div class="flex flex-wrap gap-2 justify-end">
               <button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-150" data-act="send" data-id="${row.id}">Enviar</button>
@@ -648,20 +844,29 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
 
         // Linha DETALHES (expandida)
         const trDet = document.createElement('tr');
-        trDet.className='bg-white';
+        trDet.className = 'bg-white';
         trDet.innerHTML = `
-          <td class="p-0" colspan="5">
+          <td class="p-0" colspan="6">
             <div class="row-expand" id="expand-${row.id}" aria-hidden="true">
               <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-t">
-                <div><div class="text-xs text-gray-500 mb-1">Serviço</div><div class="text-sm">${highlightText(row.servico||'—', SEARCH_TERM)}</div></div>
-                <div><div class="text-xs text-gray-500 mb-1">Técnico</div><div class="text-sm">${highlightText(row.tecnico||'—', SEARCH_TERM)}</div></div>
-                <div><div class="text-xs text-gray-500 mb-1">Status</div><div class="text-sm">${statusChips(row)}</div></div>
+                <div>
+                  <div class="text-xs text-gray-500 mb-1">Serviço</div>
+                  <div class="text-sm">${highlightText(row.servico || '—', SEARCH_TERM)}</div>
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500 mb-1">Técnico</div>
+                  <div class="text-sm">${highlightText(row.tecnico || '—', SEARCH_TERM)}</div>
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500 mb-1">Status</div>
+                  <div class="text-sm">${statusChips(row)}</div>
+                </div>
 
                 <div class="md:col-span-3">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Tempo previsto (antes do envio)</label>
                   <div class="flex gap-2 items-center">
                     <input type="text" class="rounded-lg border px-3 py-2 w-40" placeholder="45m ou 16:30"
-                           data-act="edit-eta" data-id="${row.id}" value="${escapeHtml(row.etaRaw||'')}">
+                           data-act="edit-eta" data-id="${row.id}" value="${escapeHtml(row.etaRaw || '')}">
                     <span class="text-sm text-gray-600" id="eta-info-${row.id}">
                       ${hora ? `Chega às <b>${hora}</b> (faltam <b>${minsNum}</b> min)` : '—'}
                     </span>
@@ -670,7 +875,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
 
                 <div class="md:col-span-3">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
-                  <textarea rows="4" class="w-full rounded-lg border border-gray-300 p-3 break-words focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" data-act="edit-msg" data-id="${row.id}">${escapeHtml(getRowMessage(row,false))}</textarea>
+                  <textarea rows="4" class="w-full rounded-lg border border-gray-300 p-3 break-words focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" data-act="edit-msg" data-id="${row.id}">${escapeHtml(getRowMessage(row, false))}</textarea>
                   <div class="text-xs text-gray-500 mt-1">Dica: marque o horário na modal de envio para inserir {{hora}} e {{minutos}}.</div>
                 </div>
               </div>
@@ -679,224 +884,578 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         `;
         tbody.appendChild(trDet);
 
-        // Clique (expande) / duplo clique (recolhe)
+        // Event listeners para a linha
         tr.addEventListener('click', () => toggleExpand(row.id, true));
         tr.addEventListener('dblclick', () => toggleExpand(row.id, false));
 
-        // Drag events (linha)
-        tr.addEventListener('dragstart', (ev)=>onDragStart(ev,row));
+        // Drag & drop
+        tr.addEventListener('dragstart', (ev) => onDragStart(ev, row));
         tr.addEventListener('dragend', onDragEnd);
         tr.addEventListener('dragover', onDragOverRow);
-        tr.addEventListener('drop', (ev)=>onDropOnRow(ev, carro));
+        tr.addEventListener('drop', (ev) => onDropOnRow(ev, carro));
       }
 
-      // Permitir soltar no tbody (fim da lista / mover entre carros)
+      // Event listeners para o tbody
       tbody.addEventListener('dragover', onDragOverTbody);
-      tbody.addEventListener('drop', (ev)=>onDropOnTbody(ev, carro));
+      tbody.addEventListener('drop', (ev) => onDropOnTbody(ev, carro));
     }
 
-    function toggleExpand(id, expand=true){
-      const pane = el(`expand-${id}`); if(!pane) return;
+    function toggleExpand(id, expand = true) {
+      const pane = el(`expand-${id}`);
+      if (!pane) return;
       const current = pane.getAttribute('aria-hidden') === 'false';
-      if(expand && !current){ pane.setAttribute('aria-hidden','false'); return; }
-      if(!expand && current){ pane.setAttribute('aria-hidden','true'); return; }
+      if (expand && !current) { 
+        pane.setAttribute('aria-hidden', 'false'); 
+        return; 
+      }
+      if (!expand && current) { 
+        pane.setAttribute('aria-hidden', 'true'); 
+        return; 
+      }
       pane.setAttribute('aria-hidden', current ? 'true' : 'false');
     }
 
     function render() {
       el('lista-carros').innerHTML = '';
       CARROS.forEach(renderCarroSection);
-      renderDashboard();
     }
 
     // ========= Ações =========
     function addRow() {
-      const nome=el('nome').value.trim(); let telefone=ensureBR(el('telefone').value);
-      const carro=el('carro').value; const etaRaw=el('eta').value.trim();
-      const servico=el('servico').value.trim(); const chamado=el('chamado').value.trim(); const tecnico=el('tecnico').value.trim();
+      const nome = el('nome').value.trim(); 
+      let telefone = ensureBR(el('telefone').value);
+      const carro = el('carro').value; 
+      const etaRaw = el('eta').value.trim();
+      const servico = el('servico').value.trim(); 
+      const chamado = el('chamado').value.trim(); 
+      const tecnico = el('tecnico').value.trim();
 
-      if(!nome){ showToast('Informe o nome','error'); return; }
-      const tel=onlyDigits(telefone); if(!tel || tel.length<10){ showToast('Telefone inválido. Use DDD + número.','error'); return; }
-      if(!carro){ showToast('Selecione o carro','error'); return; }
+      if (!nome) { 
+        showToast('Informe o nome', 'error'); 
+        return; 
+      }
+      
+      const tel = onlyDigits(telefone); 
+      if (!tel || tel.length < 10) { 
+        showToast('Telefone inválido. Use DDD + número.', 'error'); 
+        return; 
+      }
+      
+      if (!carro) { 
+        showToast('Selecione o carro', 'error'); 
+        return; 
+      }
 
-      const {hora,minutos}=parseETA(etaRaw);
-      const msg=renderTemplate(el('template').value||defaultTemplate(), { nome, telefone, hora, minutos, servico, chamado, tecnico }).trim();
+      const { hora, minutos } = parseETA(etaRaw);
+      const msg = renderTemplate(el('template').value || defaultTemplate(), { 
+        nome, 
+        telefone, 
+        hora, 
+        minutos, 
+        servico, 
+        chamado, 
+        tecnico 
+      }).trim();
 
-      const row={ id:crypto.randomUUID(), nome, telefone, carro, etaRaw, servico, chamado, tecnico, msg, selected:false };
-      LIST.unshift(row); save(); render();
-      ['nome','telefone','eta','servico','chamado','tecnico'].forEach(id=>el(id).value=''); el('carro').value='';
-      addToHistory('Cliente adicionado', `${nome} (${maskPhone(telefone)}) - Carro ${carro}`); showToast(`${nome} adicionado à lista`,'success');
+      const row = { 
+        id: crypto.randomUUID(), 
+        nome, 
+        telefone, 
+        carro, 
+        etaRaw, 
+        servico, 
+        chamado, 
+        tecnico, 
+        msg, 
+        selected: false 
+      };
+      
+      LIST.unshift(row); 
+      save(); 
+      render();
+      
+      // Limpa os campos
+      ['nome', 'telefone', 'eta', 'servico', 'chamado', 'tecnico'].forEach(id => el(id).value = '');
+      el('carro').value = '';
+      
+      addToHistory('Cliente adicionado', `${nome} (${maskPhone(telefone)}) - Carro ${carro}`); 
+      showToast(`${nome} adicionado à lista`, 'success');
     }
 
-    function delRow(id){
+    function delRow(id) {
       const row = LIST.find(r => r.id === id);
-      LIST = LIST.filter(r=>r.id!==id); save(); render();
-      if (row) { addToHistory('Cliente removido', `${row.nome} (${maskPhone(row.telefone)})`); showToast(`${row.nome} removido da lista`,'info'); }
+      LIST = LIST.filter(r => r.id !== id); 
+      save(); 
+      render();
+      if (row) { 
+        addToHistory('Cliente removido', `${row.nome} (${maskPhone(row.telefone)})`); 
+        showToast(`${row.nome} removido da lista`, 'info'); 
+      }
     }
 
-    function enviarCarro(carro){
-      const items = LIST.filter(r=>r.carro === carro && !r.sentNotifyAt);
-      if(items.length===0) { showToast(`Nenhum item pendente para ${carro==='argo'?'Argo':carro==='motoboy'?'Motoboy':`Carro ${carro}`}`,'info'); return; }
-      if(!confirm(`Isso vai abrir ${items.length} aba(s) do WhatsApp. Seu navegador pode bloquear. Continuar?`)) return;
-      addToHistory('Envio em lote iniciado', `${items.length} mensagens para ${carro==='argo'?'Argo':carro==='motoboy'?'Motoboy':`Carro ${carro}`}`);
-      let i=0; const step=()=>{ if(i>=items.length){ showToast(`Envio em lote concluído: ${items.length} mensagens`,'success'); return; } openWANotify(items[i]); i++; setTimeout(step, 600); }; step();
-    }
-
-    function openSendModal(row){
-      PREVIEW_ROW=row; const dlg=el('dlgSend');
-      el('dlgSendNome').textContent=row.nome; el('dlgSendTel').textContent=maskPhone(row.telefone);
-      el('dlgSendEta').value = row.etaRaw || ''; const info = parseETA(row.etaRaw);
-      el('dlgSendEtaInfo').innerHTML = info.hora ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` : '—';
-      el('dlgSendMsg').value = getRowMessage(row, false); el('dlgSendHora').checked = false; dlg.showModal();
-    }
-
-    // ========= CSV =========
-    function exportCSV(){
-      const header=['nome','telefone','carro','eta','servico','chamado','tecnico','mensagem','envio_enviado_em','retorno_enviado_em'];
-      const rows=LIST.map(r=>[r.nome,r.telefone,r.carro,r.etaRaw,r.servico||'',r.chamado||'',r.tecnico||'',(r.msg||''),r.sentNotifyAt||'',r.sentCloseAt||'']);
-      const csv=[header.join(','), ...rows.map(a=>a.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(','))].join('\n');
-      const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=url; a.download='lista-whats.csv'; a.click(); URL.revokeObjectURL(url);
-      addToHistory('CSV exportado', `${LIST.length} registros exportados`); showToast(`CSV exportado com ${LIST.length} registros`,'success');
-    }
-    function importCSV(file){
-      const reader=new FileReader();
-      reader.onload=()=>{
-        const text=reader.result; const lines=text.split(/\r?\n/).filter(Boolean);
-        if(lines.length<2){ showToast('CSV vazio ou sem cabeçalho','error'); return; }
-        const header=lines[0].split(',').map(h=>h.trim().toLowerCase());
-        const idx=(name)=>header.indexOf(name);
-        const iNome=idx('nome'), iTel=idx('telefone'), iCarro=idx('carro'), iEta=idx('eta');
-        const iServ=idx('servico'), iChamado=idx('chamado'), iTec=idx('tecnico');
-        const iMsg=idx('mensagem'), iSentN=idx('envio_enviado_em'), iSentC=idx('retorno_enviado_em');
-        if(iNome<0||iTel<0||iCarro<0){ showToast('Cabeçalho deve conter: nome, telefone, carro','error'); return; }
-        let importedCount=0;
-        for(let i=1;i<lines.length;i++){
-          const cols=parseCSVLine(lines[i]); if(!cols.length) continue;
-          const row={ id:crypto.randomUUID(), nome:cols[iNome]||'', telefone:ensureBR(cols[iTel]||''), carro:cols[iCarro]||'', etaRaw:iEta>=0?(cols[iEta]||''):'', servico:iServ>=0?(cols[iServ]||''):'', chamado:iChamado>=0?(cols[iChamado]||''):'', tecnico:iTec>=0?(cols[iTec]||''):'', msg:iMsg>=0?(cols[iMsg]||''):undefined, sentNotifyAt:iSentN>=0? Number(cols[iSentN]||'')||undefined:undefined, sentCloseAt:iSentC>=0? Number(cols[iSentC]||'')||undefined:undefined, selected:false };
-          const okTel=onlyDigits(row.telefone).length>=10; const okCarro=CARROS.includes(row.carro);
-          if(row.nome && okTel && okCarro){ LIST.push(row); importedCount++; }
+    function enviarCarro(carro) {
+      const items = LIST.filter(r => r.carro === carro && !r.sentNotifyAt);
+      if (items.length === 0) { 
+        const label = carro === 'argo' ? 'Argo' : carro === 'motoboy' ? 'Motoboy' : `Carro ${carro}`;
+        showToast(`Nenhum item pendente para ${label}`, 'info'); 
+        return; 
+      }
+      
+      if (!confirm(`Isso vai abrir ${items.length} aba(s) do WhatsApp. Seu navegador pode bloquear. Continuar?`)) return;
+      
+      addToHistory('Envio em lote iniciado', `${items.length} mensagens para ${carro === 'argo' ? 'Argo' : carro === 'motoboy' ? 'Motoboy' : `Carro ${carro}`}`);
+      
+      let i = 0;
+      const step = () => {
+        if (i >= items.length) { 
+          showToast(`Envio em lote concluído: ${items.length} mensagens`, 'success'); 
+          return; 
         }
-        save(); render(); addToHistory('CSV importado', `${importedCount} registros importados`);
-        showToast(`CSV importado: ${importedCount} registros`,'success');
-      }
-      reader.readAsText(file,'utf-8');
+        openWANotify(items[i]);
+        i++;
+        setTimeout(step, 600);
+      };
+      step();
     }
-    function parseCSVLine(line){
-      const out=[]; let cur=''; let inQuotes=false;
-      for(let i=0;i<line.length;i++){
-        const ch=line[i];
-        if(ch==='"'){ if(inQuotes && line[i+1]==='"'){ cur+='"'; i++; } else { inQuotes=!inQuotes; } }
-        else if(ch===',' && !inQuotes){ out.push(cur); cur=''; }
-        else cur+=ch;
-      }
-      out.push(cur); return out.map(s=>s.trim());
+
+    function openSendModal(row) {
+      PREVIEW_ROW = row;
+      const dlg = el('dlgSend');
+      el('dlgSendNome').textContent = row.nome;
+      el('dlgSendTel').textContent = maskPhone(row.telefone);
+      el('dlgSendEta').value = row.etaRaw || '';
+      const info = parseETA(row.etaRaw);
+      el('dlgSendEtaInfo').innerHTML = info.hora 
+        ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` 
+        : '—';
+      el('dlgSendMsg').value = getRowMessage(row, false);
+      el('dlgSendHora').checked = false;
+      dlg.showModal();
+    }
+
+    // ========= Excel =========
+    function exportXLSX() {
+      const header = ['id', 'nome', 'telefone', 'carro', 'etaRaw', 'servico', 'chamado', 'tecnico', 'msg', 'sentNotifyAt', 'sentCloseAt'];
+      const data = LIST.map(r => ({
+        id: r.id,
+        nome: r.nome,
+        telefone: r.telefone,
+        carro: r.carro,
+        etaRaw: r.etaRaw || '',
+        servico: r.servico || '',
+        chamado: r.chamado || '',
+        tecnico: r.tecnico || '',
+        msg: r.msg || '',
+        sentNotifyAt: r.sentNotifyAt || '',
+        sentCloseAt: r.sentCloseAt || ''
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(data, { header });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Lista');
+      XLSX.writeFile(wb, 'lista-whats.xlsx');
+      
+      addToHistory('Excel exportado', `${LIST.length} registros exportados`);
+      showToast(`Excel exportado com ${LIST.length} registros`, 'success');
+    }
+
+    function importXLSX(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+        
+        let imported = 0;
+        rows.forEach(obj => {
+          const row = {
+            id: obj.id || crypto.randomUUID(),
+            nome: obj.nome || '',
+            telefone: ensureBR(obj.telefone || ''),
+            carro: obj.carro || '',
+            etaRaw: obj.etaRaw || obj.eta || '',
+            servico: obj.servico || '',
+            chamado: obj.chamado || '',
+            tecnico: obj.tecnico || '',
+            msg: obj.msg || obj.mensagem || undefined,
+            sentNotifyAt: obj.sentNotifyAt ? Number(obj.sentNotifyAt) || undefined : undefined,
+            sentCloseAt: obj.sentCloseAt ? Number(obj.sentCloseAt) || undefined : undefined,
+            selected: false
+          };
+          
+          const okTel = onlyDigits(row.telefone).length >= 10;
+          const okCarro = CARROS.includes(row.carro);
+          
+          if (row.nome && okTel && okCarro) {
+            LIST.push(row);
+            imported++;
+          }
+        });
+        
+        save();
+        render();
+        addToHistory('Excel importado', `${imported} registros importados`);
+        showToast(`Excel importado: ${imported} registros`, 'success');
+      };
+      reader.readAsArrayBuffer(file);
     }
 
     // ========= Drag & Drop =========
     let DRAG_ROW_ID = null;
-    function onDragStart(ev, row){
+    
+    function onDragStart(ev, row) {
       DRAG_ROW_ID = row.id;
       ev.dataTransfer.setData('text/plain', row.id);
       ev.dataTransfer.effectAllowed = 'move';
       ev.currentTarget.classList.add('dragging');
     }
-    function onDragEnd(ev){
+    
+    function onDragEnd(ev) {
       ev.currentTarget.classList.remove('dragging');
-      document.querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
+      document.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
     }
-    function onDragOverRow(ev){
-      ev.preventDefault(); ev.dataTransfer.dropEffect = 'move';
-      const tr = ev.currentTarget; tr.classList.add('drop-target');
+    
+    function onDragOverRow(ev) {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
+      const tr = ev.currentTarget;
+      tr.classList.add('drop-target');
     }
-    function onDropOnRow(ev, targetCarro){
+    
+    function onDropOnRow(ev, targetCarro) {
       ev.preventDefault();
       const targetTr = ev.currentTarget;
       targetTr.classList.remove('drop-target');
+      
       const targetId = targetTr.dataset.id;
       const dragId = DRAG_ROW_ID || ev.dataTransfer.getData('text/plain');
-      if(!dragId || dragId===targetId) return;
+      if (!dragId || dragId === targetId) return;
 
-      const dragIndex = LIST.findIndex(r=>r.id===dragId);
-      const targetIndex = LIST.findIndex(r=>r.id===targetId);
-      if(dragIndex<0 || targetIndex<0) return;
+      const dragIndex = LIST.findIndex(r => r.id === dragId);
+      const targetIndex = LIST.findIndex(r => r.id === targetId);
+      if (dragIndex < 0 || targetIndex < 0) return;
 
-      // Atualiza carro do item arrastado para o carro de destino
       LIST[dragIndex].carro = targetCarro;
 
-      // Reordena LIST em relação à posição do target
-      const [dragItem] = LIST.splice(dragIndex,1);
-      const newTargetIndex = LIST.findIndex(r=>r.id===targetId);
+      const [dragItem] = LIST.splice(dragIndex, 1);
+      const newTargetIndex = LIST.findIndex(r => r.id === targetId);
       LIST.splice(newTargetIndex, 0, dragItem);
 
-      save(); render();
+      save();
+      render();
       addToHistory('Item movido', `${dragItem.nome} ➜ ${targetCarro}`);
     }
-    function onDragOverTbody(ev){
-      ev.preventDefault(); ev.dataTransfer.dropEffect = 'move';
+    
+    function onDragOverTbody(ev) {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
       ev.currentTarget.classList.add('drop-target');
     }
-    function onDropOnTbody(ev, targetCarro){
+    
+    function onDropOnTbody(ev, targetCarro) {
       ev.preventDefault();
-      const tbody = ev.currentTarget; tbody.classList.remove('drop-target');
+      const tbody = ev.currentTarget;
+      tbody.classList.remove('drop-target');
+      
       const dragId = DRAG_ROW_ID || ev.dataTransfer.getData('text/plain');
-      if(!dragId) return;
-      const dragIndex = LIST.findIndex(r=>r.id===dragId);
-      if(dragIndex<0) return;
-      const [dragItem] = LIST.splice(dragIndex,1);
+      if (!dragId) return;
+      
+      const dragIndex = LIST.findIndex(r => r.id === dragId);
+      if (dragIndex < 0) return;
+      
+      const [dragItem] = LIST.splice(dragIndex, 1);
       dragItem.carro = targetCarro;
-      // Inserir no final das entradas desse carro (após último índice do carro)
+      
       let lastIndexSameCar = -1;
-      for(let i=0;i<LIST.length;i++){ if(LIST[i].carro===targetCarro) lastIndexSameCar=i; }
-      LIST.splice(lastIndexSameCar+1, 0, dragItem);
+      for (let i = 0; i < LIST.length; i++) {
+        if (LIST[i].carro === targetCarro) lastIndexSameCar = i;
+      }
+      LIST.splice(lastIndexSameCar + 1, 0, dragItem);
 
-      save(); render();
+      save();
+      render();
       addToHistory('Item movido', `${dragItem.nome} ➜ ${targetCarro} (final da lista)`);
     }
 
+    // ========= Integração Airtable =========
+    async function testAirtableConnection() {
+      try {
+        const baseId = el('airtableBaseId').value.trim();
+        const apiKey = el('airtableApiKey').value.trim();
+        
+        if (!baseId || !apiKey) {
+          el('airtableStatus').innerHTML = 'Status: <span class="text-red-600">Base ID e API Key necessários</span>';
+          return false;
+        }
+        
+        // Testar com a tabela específica do seu embed
+        const url = `https://api.airtable.com/v0/${baseId}/shraujmqX1hJJ53dY`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          el('airtableStatus').innerHTML = `Status: <span class="text-green-600">✅ Conectado! ${data.records?.length || 0} registros encontrados</span>`;
+          return true;
+        } else {
+          el('airtableStatus').innerHTML = 'Status: <span class="text-red-600">❌ Erro na conexão</span>';
+          return false;
+        }
+        
+      } catch (error) {
+        el('airtableStatus').innerHTML = 'Status: <span class="text-red-600">❌ Erro: ' + error.message + '</span>';
+        return false;
+      }
+    }
+
+    async function pullFromAirtable() {
+      try {
+        const baseId = el('airtableBaseId').value.trim();
+        const apiKey = el('airtableApiKey').value.trim();
+        
+        if (!baseId || !apiKey) {
+          showToast('Configure Base ID e API Key do Airtable', 'error');
+          return [];
+        }
+        
+        // Usar a tabela específica do seu embed
+        const url = `https://api.airtable.com/v0/${baseId}/shraujmqX1hJJ53dY`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) throw new Error('Falha ao buscar dados do Airtable');
+        
+        const data = await response.json();
+        
+        // Converter formato Airtable para nosso sistema
+        const records = data.records.map(record => ({
+          id: record.id,
+          nome: record.fields.Nome || record.fields['Nome do cliente'] || '',
+          telefone: record.fields.Telefone || record.fields.WhatsApp || '',
+          carro: record.fields.Carro || record.fields.Veículo || '',
+          servico: record.fields.Servico || record.fields.Serviço || '',
+          chamado: record.fields.Chamado || record.fields.OS || '',
+          tecnico: record.fields.Tecnico || record.fields.Técnico || '',
+          etaRaw: record.fields.Previsao || record.fields.Previsão || record.fields.ETA || '',
+          status: record.fields.Status || 'Pendente',
+          sentNotifyAt: (record.fields.Status && record.fields.Status.includes('Enviado')) ? Date.now() - 3600000 : undefined,
+          sentCloseAt: (record.fields.Status && record.fields.Status.includes('Finalizado')) ? Date.now() - 7200000 : undefined
+        })).filter(record => record.nome && record.telefone && record.carro);
+        
+        return records;
+        
+      } catch (error) {
+        console.error('Erro Airtable:', error);
+        showToast('Erro ao buscar do Airtable: ' + error.message, 'error');
+        return [];
+      }
+    }
+
+    async function pushToAirtable() {
+      try {
+        const baseId = el('airtableBaseId').value.trim();
+        const apiKey = el('airtableApiKey').value.trim();
+        
+        if (!baseId || !apiKey) {
+          showToast('Configure Base ID e API Key do Airtable', 'error');
+          return;
+        }
+        
+        const url = `https://api.airtable.com/v0/${baseId}/shraujmqX1hJJ53dY`;
+        
+        // Preparar dados para enviar
+        const records = LIST.map(item => ({
+          fields: {
+            'Nome': item.nome,
+            'Telefone': item.telefone,
+            'Carro': item.carro,
+            'Servico': item.servico || '',
+            'Chamado': item.chamado || '',
+            'Tecnico': item.tecnico || '',
+            'Previsao': item.etaRaw || '',
+            'Status': item.sentCloseAt ? 'Finalizado' : 
+                     item.sentNotifyAt ? 'Enviado' : 'Pendente'
+          }
+        }));
+        
+        // Enviar em lotes de 10 (limitação Airtable)
+        for (let i = 0; i < records.length; i += 10) {
+          const batch = records.slice(i, i + 10);
+          
+          const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+              records: batch,
+              typecast: true
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || 'Falha ao enviar dados');
+          }
+        }
+        
+        showToast('Dados sincronizados com Airtable!', 'success');
+        addToHistory('Airtable sincronizado', `${LIST.length} registros enviados`);
+        
+      } catch (error) {
+        console.error('Erro Airtable:', error);
+        showToast('Erro ao enviar para Airtable: ' + error.message, 'error');
+      }
+    }
+
+    // ========= Funções de Integração =========
+    async function pullFromGoogleSheet() {
+      showToast('Buscando dados do Airtable...', 'info');
+      const records = await pullFromAirtable();
+      if (records.length > 0) {
+        LIST = records;
+        save();
+        render();
+        showToast(`Dados carregados do Airtable: ${records.length} registros`, 'success');
+        addToHistory('Airtable carregado', `${records.length} registros importados`);
+      } else {
+        showToast('Nenhum dado encontrado no Airtable', 'info');
+      }
+    }
+
+    async function pushToGoogleSheet() {
+      showToast('Enviando dados para Airtable...', 'info');
+      await pushToAirtable();
+    }
+
     // ========= Listeners =========
-    document.addEventListener('click',(e)=>{
-      const t=e.target; const act=t.dataset.act; if(!act) return;
-      if(act==='send'){ const id=t.dataset.id; const row=LIST.find(r=>r.id===id); if(row) openSendModal(row); }
-      if(act==='close'){ const id=t.dataset.id; const row=LIST.find(r=>r.id===id); if(row) openWAClose(row); }
-      if(act==='del'){ const id=t.dataset.id; delRow(id); }
+    document.addEventListener('click', (e) => {
+      const t = e.target;
+      const act = t.dataset.act;
+      if (!act) return;
+      
+      if (act === 'send') {
+        const id = t.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if (row) openSendModal(row);
+      }
+      
+      if (act === 'close') {
+        const id = t.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if (row) openWAClose(row);
+      }
+      
+      if (act === 'del') {
+        const id = t.dataset.id;
+        delRow(id);
+      }
     });
 
-    document.addEventListener('input',(e)=>{
-      const t=e.target;
-      if(t.dataset.act==='edit-msg'){ const id=t.dataset.id; const row=LIST.find(r=>r.id===id); if(row){ row.msg=t.value; save(); } }
-      if(t.dataset.act==='edit-eta'){ const id=t.dataset.id; const row=LIST.find(r=>r.id===id); if(row){ row.etaRaw = t.value.trim(); const info = parseETA(row.etaRaw); const span = el(`eta-info-${id}`); if(span) span.innerHTML = info.hora ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` : '—'; save(); render(); } }
+    document.addEventListener('input', (e) => {
+      const t = e.target;
+      
+      if (t.dataset.act === 'edit-msg') {
+        const id = t.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if (row) {
+          row.msg = t.value;
+          save();
+        }
+      }
+      
+      if (t.dataset.act === 'edit-eta') {
+        const id = t.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if (row) {
+          row.etaRaw = t.value.trim();
+          const info = parseETA(row.etaRaw);
+          const span = el(`eta-info-${id}`);
+          if (span) {
+            span.innerHTML = info.hora 
+              ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` 
+              : '—';
+          }
+          save();
+          render();
+        }
+      }
     });
 
     document.addEventListener('click', (e) => {
-      if(e.target.classList.contains('enviar-carro')) {
-        const carro = e.target.dataset.carro; enviarCarro(carro);
+      if (e.target.classList.contains('enviar-carro')) {
+        const carro = e.target.dataset.carro;
+        enviarCarro(carro);
       }
     });
 
     // Busca
-    el('busca').addEventListener('input', (e) => { SEARCH_TERM = norm(e.target.value); render(); });
-
-    // Toggle Dashboard (com animação)
-    el('btnToggleDash').addEventListener('click', () => {
-      const dash = el('dashBody');
-      const isHidden = dash.classList.contains('hide');
-      if(isHidden){ dash.classList.remove('hide'); dash.classList.add('show'); el('btnToggleDash').textContent='Ocultar'; }
-      else{ dash.classList.remove('show'); dash.classList.add('hide'); el('btnToggleDash').textContent='Mostrar'; }
+    el('busca').addEventListener('input', (e) => {
+      SEARCH_TERM = norm(e.target.value);
+      render();
     });
 
-    // Import/Export/Reset
-    el('btnImport').addEventListener('click', ()=> el('fileCSV').click());
-    el('fileCSV').addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if(f) importCSV(f); e.target.value=''; });
-    el('btnExport').addEventListener('click', exportCSV);
-    el('btnLimparLista').addEventListener('click', ()=>{ if(!confirm('Limpar toda a lista?')) return; const count = LIST.length; LIST=[]; save(); render(); addToHistory('Lista limpa', `${count} registros removidos`); showToast(`Lista limpa: ${count} registros removidos`,'info'); });
+    // Import/Export Excel
+    el('btnImportXLSX').addEventListener('click', () => el('fileXLSX').click());
+    el('fileXLSX').addEventListener('change', (e) => {
+      const f = e.target.files?.[0];
+      if (f) importXLSX(f);
+      e.target.value = '';
+    });
+    el('btnExportXLSX').addEventListener('click', exportXLSX);
+
+    // Lista
+    el('btnLimparLista').addEventListener('click', () => {
+      if (!confirm('Limpar toda a lista?')) return;
+      const count = LIST.length;
+      LIST = [];
+      save();
+      render();
+      addToHistory('Lista limpa', `${count} registros removidos`);
+      showToast(`Lista limpa: ${count} registros removidos`, 'info');
+    });
+    
     el('btnAdd').addEventListener('click', addRow);
-    el('btnSalvarTPL').addEventListener('click', ()=>{ save(); const b=el('btnSalvarTPL'); const orig=b.innerHTML; b.innerHTML='✅ Salvo!'; setTimeout(()=> b.innerHTML=orig, 1500); addToHistory('Template salvo','Modelo de mensagem atualizado'); });
-    el('btnResetTPL').addEventListener('click', ()=>{ if(confirm('Restaurar templates padrão?')){ el('template').value=defaultTemplate(); el('templateEnc').value=defaultEncTemplate(); save(); addToHistory('Template resetado','Modelos restaurados para padrão'); showToast('Templates restaurados para padrão','info'); } });
+    
+    el('btnSalvarTPL').addEventListener('click', () => {
+      save();
+      const b = el('btnSalvarTPL');
+      const orig = b.innerHTML;
+      b.innerHTML = '✅ Salvo!';
+      setTimeout(() => b.innerHTML = orig, 1500);
+      addToHistory('Template salvo', 'Modelo de mensagem atualizado');
+    });
+    
+    el('btnResetTPL').addEventListener('click', () => {
+      if (confirm('Restaurar templates padrão?')) {
+        el('template').value = defaultTemplate();
+        el('templateEnc').value = defaultEncTemplate();
+        save();
+        addToHistory('Template resetado', 'Modelos restaurados para padrão');
+        showToast('Templates restaurados para padrão', 'info');
+      }
+    });
 
     // Histórico (modal)
-    el('btnOpenHistory').addEventListener('click', ()=>{ el('dlgHistory').showModal(); renderHistory(); });
-    el('dlgHistoryClose').addEventListener('click', ()=> el('dlgHistory').close());
+    el('btnOpenHistory').addEventListener('click', () => {
+      el('dlgHistory').showModal();
+      renderHistory();
+    });
+    
+    el('dlgHistoryClose').addEventListener('click', () => el('dlgHistory').close());
+    
     el('btnClearHistory').addEventListener('click', () => {
       if (confirm('Limpar histórico de ações?')) {
         ACTION_HISTORY = [];
@@ -907,20 +1466,42 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     });
 
     // Modal envio
-    el('dlgSendClose').addEventListener('click', ()=> el('dlgSend').close());
-    el('dlgSendCopy').addEventListener('click', ()=>{ navigator.clipboard.writeText(el('dlgSendMsg').value).then(()=> { showToast('Mensagem copiada para a área de transferência','success'); }); });
-    el('dlgSendHora').addEventListener('change', ()=>{ if(!PREVIEW_ROW) return; const incluirHora = el('dlgSendHora').checked; el('dlgSendMsg').value = getRowMessage(PREVIEW_ROW, incluirHora); });
-    el('dlgSendEta').addEventListener('input', ()=>{ if(!PREVIEW_ROW) return; PREVIEW_ROW.etaRaw = el('dlgSendEta').value.trim(); const info = parseETA(PREVIEW_ROW.etaRaw); el('dlgSendEtaInfo').innerHTML = info.hora ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` : '—'; if(el('dlgSendHora').checked){ el('dlgSendMsg').value = getRowMessage(PREVIEW_ROW, true); } save(); render(); });
-    el('dlgSendConfirm').addEventListener('click', ()=>{ if(!PREVIEW_ROW) return; const incluirHora = el('dlgSendHora').checked; const edited = el('dlgSendMsg').value.trim(); if(edited){ PREVIEW_ROW.msg = edited; save(); } openWANotify(PREVIEW_ROW, incluirHora); el('dlgSend').close(); });
-    el('btnReagendar').addEventListener('click', ()=>{ if(!PREVIEW_ROW) return; delRow(PREVIEW_ROW.id); el('dlgSend').close(); });
-
-    // Boot
-    window.addEventListener('DOMContentLoaded', () => {
-      // recolher templates por padrão
-      const d = document.getElementById('tplDetails');
-      if (d && d.hasAttribute('open')) d.removeAttribute('open');
-      load();
+    el('dlgSendClose').addEventListener('click', () => el('dlgSend').close());
+    
+    el('dlgSendCopy').addEventListener('click', () => {
+      navigator.clipboard.writeText(el('dlgSendMsg').value)
+        .then(() => {
+          showToast('Mensagem copiada para a área de transferência', 'success');
+        });
     });
+    
+    el('dlgSendHora').addEventListener('change', () => {
+      if (!PREVIEW_ROW) return;
+      const incluirHora = el('dlgSendHora').checked;
+      el('dlgSendMsg').value = getRowMessage(PREVIEW_ROW, incluirHora);
+    });
+    
+    el('dlgSendEta').addEventListener('input', () => {
+      if (!PREVIEW_ROW) return;
+      PREVIEW_ROW.etaRaw = el('dlgSendEta').value.trim();
+      const info = parseETA(PREVIEW_ROW.etaRaw);
+      el('dlgSendEtaInfo').innerHTML = info.hora 
+        ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` 
+        : '—';
+    });
+
+    // Integração Airtable
+    el('btnPullAirtable').addEventListener('click', pullFromGoogleSheet);
+    el('btnPushAirtable').addEventListener('click', pushToGoogleSheet);
+    el('btnTestAirtable').addEventListener('click', testAirtableConnection);
+
+    // Start
+    load();
+
+    // Testar conexão automaticamente ao carregar
+    setTimeout(() => {
+      testAirtableConnection();
+    }, 1000);
   </script>
 </body>
 </html>

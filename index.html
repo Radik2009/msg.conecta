@@ -188,6 +188,49 @@
       padding: 0.1rem 0.2rem;
       border-radius: 0.25rem;
     }
+
+    .dragging {
+      opacity: 0.5;
+      transform: rotate(5deg);
+    }
+
+    .drop-zone {
+      min-height: 20px;
+      transition: all 0.2s ease;
+    }
+
+    .drop-zone.drag-over {
+      background-color: rgba(16, 185, 129, 0.1);
+      border: 2px dashed var(--primary);
+    }
+
+    .row-expand {
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      overflow: hidden;
+    }
+
+    .row-expand[aria-hidden="true"] {
+      max-height: 0;
+      opacity: 0;
+    }
+
+    .row-expand[aria-hidden="false"] {
+      max-height: 500px;
+      opacity: 1;
+    }
+
+    .position-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body data-theme="light" class="min-h-screen">
@@ -260,7 +303,15 @@
           <div class="flex items-start gap-4 flex-wrap">
             <div class="grow">
               <label class="block text-sm font-medium mb-2" for="template">Modelo de mensagem</label>
-              <textarea id="template" rows="5" class="w-full rounded-xl border px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
+              <textarea id="template" rows="5" class="w-full rounded-xl border px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">Olá, {{nome}}! 👋
+
+📍 Atendimento Smart Conecta
+⏰ Previsão de chegada: {{hora}} (aprox. {{minutos}}).
+📋 Chamado: {{chamado}}
+🛠️ Serviço: {{servico}}
+👨Técnico: {{tecnico}}
+
+Se precisar tirar dúvidas, pode responder por aqui. Estamos à disposição. ✅</textarea>
               <p class="text-xs opacity-70 mt-2">Placeholders:
                 <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{nome}}</span>,
                 <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{telefone}}</span>,
@@ -289,7 +340,12 @@
           <div class="flex items-start gap-4 flex-wrap">
             <div class="grow">
               <label class="block text-sm font-medium mb-2" for="templateEnc">Modelo de <b>encerramento</b></label>
-              <textarea id="templateEnc" rows="4" class="w-full rounded-xl border px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
+              <textarea id="templateEnc" rows="4" class="w-full rounded-xl border px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">✅ Serviço concluído, {{nome}}!
+
+📍 Smart Conecta — Seu chamado foi finalizado com sucesso.
+📞 Suporte: https://wa.me/5511994450724
+
+Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏</textarea>
               <p class="text-xs opacity-70 mt-2">Ex.: <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">Seu chamado foi finalizado. Seguem as fotos do serviço. Qualquer dúvida, estou à disposição.</span></p>
             </div>
           </div>
@@ -350,6 +406,18 @@
             </svg>
             Adicionar à lista
           </button>
+        </div>
+      </div>
+      
+      <!-- Novos campos -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div>
+          <label for="produto" class="block text-sm font-medium mb-2">Nome do Produto</label>
+          <input id="produto" type="text" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Ex.: Impressora Laser" />
+        </div>
+        <div>
+          <label for="endereco" class="block text-sm font-medium mb-2">Endereço</label>
+          <input id="endereco" type="text" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Ex.: Rua das Flores, 123" />
         </div>
       </div>
     </section>
@@ -597,6 +665,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     const CARROS = ['51', '84', '30', '96', '97', 'argo', 'motoboy'];
     let PREVIEW_ROW = null;
     let SEARCH_TERM = '';
+    let DRAGGED_ITEM = null;
 
     function save() {
       try {
@@ -712,6 +781,71 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); 
     }
 
+    // ========= DRAG & DROP =========
+    function initDragAndDrop() {
+      document.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('draggable-item')) {
+          DRAGGED_ITEM = e.target;
+          e.target.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', e.target.dataset.id);
+        }
+      });
+
+      document.addEventListener('dragend', (e) => {
+        if (e.target.classList.contains('draggable-item')) {
+          e.target.classList.remove('dragging');
+          document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.classList.remove('drag-over');
+          });
+        }
+      });
+
+      document.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const dropZone = e.target.closest('.drop-zone');
+        if (dropZone) {
+          dropZone.classList.add('drag-over');
+        }
+      });
+
+      document.addEventListener('dragleave', (e) => {
+        const dropZone = e.target.closest('.drop-zone');
+        if (dropZone && !dropZone.contains(e.relatedTarget)) {
+          dropZone.classList.remove('drag-over');
+        }
+      });
+
+      document.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const dropZone = e.target.closest('.drop-zone');
+        if (dropZone && DRAGGED_ITEM) {
+          dropZone.classList.remove('drag-over');
+          
+          const itemId = DRAGGED_ITEM.dataset.id;
+          const targetCarro = dropZone.dataset.carro;
+          
+          moveItemToCarro(itemId, targetCarro);
+        }
+      });
+    }
+
+    function moveItemToCarro(itemId, targetCarro) {
+      const itemIndex = LIST.findIndex(item => item.id === itemId);
+      if (itemIndex === -1) return;
+      
+      const item = LIST[itemIndex];
+      const oldCarro = item.carro;
+      
+      if (oldCarro !== targetCarro) {
+        item.carro = targetCarro;
+        save();
+        render();
+        addToHistory('Item movido', `${item.nome} de ${oldCarro} para ${targetCarro}`);
+        showToast(`${item.nome} movido para ${targetCarro}`, 'success');
+      }
+    }
+
     // ========= RENDER POR CARRO =========
     function renderCarroSection(carro) {
       const carroId = carro.toLowerCase().replace(/\s+/g, '-');
@@ -730,7 +864,9 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         norm(row.chamado).includes(SEARCH_TERM) ||
         norm(row.telefone).includes(SEARCH_TERM) ||
         norm(row.servico).includes(SEARCH_TERM) ||
-        norm(row.tecnico).includes(SEARCH_TERM)
+        norm(row.tecnico).includes(SEARCH_TERM) ||
+        norm(row.produto || '').includes(SEARCH_TERM) ||
+        norm(row.endereco || '').includes(SEARCH_TERM)
       ) : carroRows;
 
       // Remove seção se não há resultados filtrados
@@ -772,10 +908,11 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
           </button>
         </div>
 
-        <div class="mt-4 overflow-x-auto relative rounded-xl border border-opacity-20">
+        <div class="drop-zone mt-4 overflow-x-auto relative rounded-xl border border-opacity-20" data-carro="${carro}" id="drop-zone-${carroId}">
           <table class="min-w-full text-sm table-auto">
             <thead>
               <tr class="bg-opacity-20 border-b border-opacity-20">
+                <th class="p-3 text-left font-semibold">Pos</th>
                 <th class="p-3 text-left font-semibold">Nome</th>
                 <th class="p-3 text-left font-semibold">Telefone</th>
                 <th class="p-3 text-left font-semibold">Chamado</th>
@@ -784,7 +921,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
                 <th class="p-3 text-left font-semibold">Ações</th>
               </tr>
             </thead>
-            <tbody id="tbody-${carroId}" class="align-top" data-carro="${carro}"></tbody>
+            <tbody id="tbody-${carroId}" class="align-top"></tbody>
           </table>
         </div>
       `;
@@ -792,17 +929,21 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       const tbody = el(`tbody-${carroId}`); 
       tbody.innerHTML = '';
 
-      for (const row of filteredRows) {
+      filteredRows.forEach((row, index) => {
         const { hora, minutos, minsNum } = parseETA(row.etaRaw);
         const resumoPrev = hora 
           ? `<span class='font-medium'>${hora}</span> <span class='opacity-70 text-xs'>(${minutos})</span>` 
           : '<span class="opacity-40 text-xs">—</span>';
 
-        // Linha RESUMO
+        // Linha principal
         const tr = document.createElement('tr');
-        tr.className = 'border-b border-opacity-10 hover:bg-opacity-10 transition-colors duration-150 row-summary';
+        tr.className = 'border-b border-opacity-10 hover:bg-opacity-10 transition-colors duration-150 draggable-item';
         tr.dataset.id = row.id;
+        tr.setAttribute('draggable', 'true');
         tr.innerHTML = `
+          <td class="p-3">
+            <div class="position-badge">${index + 1}</div>
+          </td>
           <td class="p-3 font-medium">${highlightText(row.nome, SEARCH_TERM)}</td>
           <td class="p-3 mono">${highlightText(maskPhone(row.telefone), SEARCH_TERM)}</td>
           <td class="p-3">${highlightText(row.chamado || '', SEARCH_TERM)}</td>
@@ -817,7 +958,60 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
           </td>
         `;
         tbody.appendChild(tr);
-      }
+
+        // Linha expandida com informações detalhadas
+        const trExpand = document.createElement('tr');
+        trExpand.className = 'bg-opacity-5';
+        trExpand.innerHTML = `
+          <td colspan="7" class="p-0">
+            <div class="row-expand" id="expand-${row.id}" aria-hidden="true">
+              <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-opacity-20">
+                <div>
+                  <div class="text-xs opacity-70 mb-1">Serviço</div>
+                  <div class="text-sm">${highlightText(row.servico || '—', SEARCH_TERM)}</div>
+                </div>
+                <div>
+                  <div class="text-xs opacity-70 mb-1">Técnico</div>
+                  <div class="text-sm">${highlightText(row.tecnico || '—', SEARCH_TERM)}</div>
+                </div>
+                <div>
+                  <div class="text-xs opacity-70 mb-1">Produto</div>
+                  <div class="text-sm">${highlightText(row.produto || '—', SEARCH_TERM)}</div>
+                </div>
+                <div>
+                  <div class="text-xs opacity-70 mb-1">Endereço</div>
+                  <div class="text-sm">${highlightText(row.endereco || '—', SEARCH_TERM)}</div>
+                </div>
+                <div class="md:col-span-2 lg:col-span-4">
+                  <div class="text-xs opacity-70 mb-1">Tempo previsto</div>
+                  <div class="flex gap-2 items-center">
+                    <input type="text" class="rounded-lg border px-3 py-2 w-40" placeholder="45m ou 16:30"
+                           data-act="edit-eta" data-id="${row.id}" value="${escapeHtml(row.etaRaw || '')}">
+                    <span class="text-sm opacity-70" id="eta-info-${row.id}">
+                      ${hora ? `Chega às <b>${hora}</b> (faltam <b>${minsNum}</b> min)` : '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(trExpand);
+
+        // Event listener para expandir/contrair
+        tr.addEventListener('click', (e) => {
+          if (!e.target.closest('button')) {
+            toggleExpand(row.id);
+          }
+        });
+      });
+    }
+
+    function toggleExpand(id) {
+      const pane = el(`expand-${id}`);
+      if (!pane) return;
+      const isHidden = pane.getAttribute('aria-hidden') === 'true';
+      pane.setAttribute('aria-hidden', !isHidden);
     }
 
     function render() {
@@ -834,6 +1028,8 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       const servico = el('servico').value.trim(); 
       const chamado = el('chamado').value.trim(); 
       const tecnico = el('tecnico').value.trim();
+      const produto = el('produto').value.trim();
+      const endereco = el('endereco').value.trim();
 
       if (!nome) { 
         showToast('Informe o nome', 'error'); 
@@ -851,17 +1047,6 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         return; 
       }
 
-      const { hora, minutos } = parseETA(etaRaw);
-      const msg = renderTemplate(el('template').value || defaultTemplate(), { 
-        nome, 
-        telefone, 
-        hora, 
-        minutos, 
-        servico, 
-        chamado, 
-        tecnico 
-      }).trim();
-
       const row = { 
         id: crypto.randomUUID(), 
         nome, 
@@ -870,8 +1055,9 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         etaRaw, 
         servico, 
         chamado, 
-        tecnico, 
-        msg, 
+        tecnico,
+        produto,
+        endereco,
         selected: false 
       };
       
@@ -880,7 +1066,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       render();
       
       // Limpa os campos
-      ['nome', 'telefone', 'eta', 'servico', 'chamado', 'tecnico'].forEach(id => el(id).value = '');
+      ['nome', 'telefone', 'eta', 'servico', 'chamado', 'tecnico', 'produto', 'endereco'].forEach(id => el(id).value = '');
       el('carro').value = '';
       
       addToHistory('Cliente adicionado', `${nome} (${maskPhone(telefone)}) - Carro ${carro}`); 
@@ -940,7 +1126,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
 
     // ========= EXCEL =========
     function exportXLSX() {
-      const header = ['id', 'nome', 'telefone', 'carro', 'etaRaw', 'servico', 'chamado', 'tecnico', 'msg', 'sentNotifyAt', 'sentCloseAt'];
+      const header = ['id', 'nome', 'telefone', 'carro', 'etaRaw', 'servico', 'chamado', 'tecnico', 'produto', 'endereco', 'sentNotifyAt', 'sentCloseAt'];
       const data = LIST.map(r => ({
         id: r.id,
         nome: r.nome,
@@ -950,7 +1136,8 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         servico: r.servico || '',
         chamado: r.chamado || '',
         tecnico: r.tecnico || '',
-        msg: r.msg || '',
+        produto: r.produto || '',
+        endereco: r.endereco || '',
         sentNotifyAt: r.sentNotifyAt || '',
         sentCloseAt: r.sentCloseAt || ''
       }));
@@ -983,7 +1170,8 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
             servico: obj.servico || '',
             chamado: obj.chamado || '',
             tecnico: obj.tecnico || '',
-            msg: obj.msg || obj.mensagem || undefined,
+            produto: obj.produto || '',
+            endereco: obj.endereco || '',
             sentNotifyAt: obj.sentNotifyAt ? Number(obj.sentNotifyAt) || undefined : undefined,
             sentCloseAt: obj.sentCloseAt ? Number(obj.sentCloseAt) || undefined : undefined,
             selected: false
@@ -1027,6 +1215,26 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       if (act === 'del') {
         const id = t.dataset.id;
         delRow(id);
+      }
+    });
+
+    document.addEventListener('input', (e) => {
+      const t = e.target;
+      
+      if (t.dataset.act === 'edit-eta') {
+        const id = t.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if (row) {
+          row.etaRaw = t.value.trim();
+          const info = parseETA(row.etaRaw);
+          const span = el(`eta-info-${id}`);
+          if (span) {
+            span.innerHTML = info.hora 
+              ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` 
+              : '—';
+          }
+          save();
+        }
       }
     });
 
@@ -1166,6 +1374,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     // ========= INICIALIZAÇÃO =========
     function init() {
       initTheme();
+      initDragAndDrop();
       load();
     }
 

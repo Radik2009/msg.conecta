@@ -204,21 +204,6 @@
       border: 2px dashed var(--primary);
     }
 
-    .row-expand {
-      transition: max-height 0.3s ease, opacity 0.3s ease;
-      overflow: hidden;
-    }
-
-    .row-expand[aria-hidden="true"] {
-      max-height: 0;
-      opacity: 0;
-    }
-
-    .row-expand[aria-hidden="false"] {
-      max-height: 500px;
-      opacity: 1;
-    }
-
     .position-badge {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -230,6 +215,33 @@
       justify-content: center;
       font-size: 12px;
       font-weight: bold;
+    }
+
+    .chamado-item {
+      border-left: 4px solid var(--primary);
+      transition: all 0.2s ease;
+    }
+
+    .chamado-item:hover {
+      transform: translateX(4px);
+    }
+
+    .info-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 80px;
+    }
+
+    .info-content {
+      flex: 1;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -908,110 +920,67 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
           </button>
         </div>
 
-        <div class="drop-zone mt-4 overflow-x-auto relative rounded-xl border border-opacity-20" data-carro="${carro}" id="drop-zone-${carroId}">
-          <table class="min-w-full text-sm table-auto">
-            <thead>
-              <tr class="bg-opacity-20 border-b border-opacity-20">
-                <th class="p-3 text-left font-semibold">Pos</th>
-                <th class="p-3 text-left font-semibold">Nome</th>
-                <th class="p-3 text-left font-semibold">Telefone</th>
-                <th class="p-3 text-left font-semibold">Chamado</th>
-                <th class="p-3 text-left font-semibold">Previsto</th>
-                <th class="p-3 text-left font-semibold">Status</th>
-                <th class="p-3 text-left font-semibold">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-${carroId}" class="align-top"></tbody>
-          </table>
+        <div class="drop-zone space-y-3" data-carro="${carro}" id="drop-zone-${carroId}">
+          ${filteredRows.map((row, index) => renderChamadoItem(row, index)).join('')}
         </div>
       `;
+    }
 
-      const tbody = el(`tbody-${carroId}`); 
-      tbody.innerHTML = '';
-
-      filteredRows.forEach((row, index) => {
-        const { hora, minutos, minsNum } = parseETA(row.etaRaw);
-        const resumoPrev = hora 
-          ? `<span class='font-medium'>${hora}</span> <span class='opacity-70 text-xs'>(${minutos})</span>` 
-          : '<span class="opacity-40 text-xs">—</span>';
-
-        // Linha principal
-        const tr = document.createElement('tr');
-        tr.className = 'border-b border-opacity-10 hover:bg-opacity-10 transition-colors duration-150 draggable-item';
-        tr.dataset.id = row.id;
-        tr.setAttribute('draggable', 'true');
-        tr.innerHTML = `
-          <td class="p-3">
-            <div class="position-badge">${index + 1}</div>
-          </td>
-          <td class="p-3 font-medium">${highlightText(row.nome, SEARCH_TERM)}</td>
-          <td class="p-3 mono">${highlightText(maskPhone(row.telefone), SEARCH_TERM)}</td>
-          <td class="p-3">${highlightText(row.chamado || '', SEARCH_TERM)}</td>
-          <td class="p-3">${resumoPrev}</td>
-          <td class="p-3 min-w-[220px]">${statusChips(row)}</td>
-          <td class="p-3">
-            <div class="flex flex-wrap gap-2 justify-end">
-              <button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-150" data-act="send" data-id="${row.id}">Enviar</button>
-              <button class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-150" data-act="close" data-id="${row.id}">Encerrar</button>
-              <button class="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 bg-white hover:bg-red-50 transition-colors duration-150 dark:bg-red-900/20 dark:border-red-700 dark:hover:bg-red-900/30" data-act="del" data-id="${row.id}">Remover</button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-
-        // Linha expandida com informações detalhadas
-        const trExpand = document.createElement('tr');
-        trExpand.className = 'bg-opacity-5';
-        trExpand.innerHTML = `
-          <td colspan="7" class="p-0">
-            <div class="row-expand" id="expand-${row.id}" aria-hidden="true">
-              <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-opacity-20">
-                <div>
-                  <div class="text-xs opacity-70 mb-1">Serviço</div>
-                  <div class="text-sm">${highlightText(row.servico || '—', SEARCH_TERM)}</div>
-                </div>
-                <div>
-                  <div class="text-xs opacity-70 mb-1">Técnico</div>
-                  <div class="text-sm">${highlightText(row.tecnico || '—', SEARCH_TERM)}</div>
-                </div>
-                <div>
-                  <div class="text-xs opacity-70 mb-1">Produto</div>
-                  <div class="text-sm">${highlightText(row.produto || '—', SEARCH_TERM)}</div>
-                </div>
-                <div>
-                  <div class="text-xs opacity-70 mb-1">Endereço</div>
-                  <div class="text-sm">${highlightText(row.endereco || '—', SEARCH_TERM)}</div>
-                </div>
-                <div class="md:col-span-2 lg:col-span-4">
-                  <div class="text-xs opacity-70 mb-1">Tempo previsto</div>
-                  <div class="flex gap-2 items-center">
-                    <input type="text" class="rounded-lg border px-3 py-2 w-40" placeholder="45m ou 16:30"
-                           data-act="edit-eta" data-id="${row.id}" value="${escapeHtml(row.etaRaw || '')}">
-                    <span class="text-sm opacity-70" id="eta-info-${row.id}">
-                      ${hora ? `Chega às <b>${hora}</b> (faltam <b>${minsNum}</b> min)` : '—'}
-                    </span>
+    function renderChamadoItem(row, index) {
+      const { hora, minutos } = parseETA(row.etaRaw);
+      const previsao = hora ? `${hora} (${minutos})` : '—';
+      
+      return `
+        <div class="chamado-item card p-4 draggable-item" data-id="${row.id}" draggable="true">
+          <div class="flex items-start justify-between">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start gap-3 mb-3">
+                <div class="position-badge">${index + 1}</div>
+                <div class="flex-1 min-w-0">
+                  <div class="info-line">
+                    <span class="info-label">${row.chamado || '—'}</span>
+                    <span class="info-content font-semibold">${highlightText(row.nome, SEARCH_TERM)}</span>
+                  </div>
+                  <div class="info-line">
+                    <span class="info-label">Serviço</span>
+                    <span class="info-content">${highlightText(row.servico || '—', SEARCH_TERM)}</span>
+                  </div>
+                  <div class="info-line">
+                    <span class="info-label">Produto</span>
+                    <span class="info-content">${highlightText(row.produto || '—', SEARCH_TERM)}</span>
+                  </div>
+                  <div class="info-line">
+                    <span class="info-label">Endereço</span>
+                    <span class="info-content">${highlightText(row.endereco || '—', SEARCH_TERM)}</span>
+                  </div>
+                  <div class="info-line">
+                    <span class="info-label">Previsão</span>
+                    <span class="info-content">${previsao}</span>
+                  </div>
+                  <div class="info-line">
+                    <span class="info-label">Técnico</span>
+                    <span class="info-content">${highlightText(row.tecnico || '—', SEARCH_TERM)}</span>
                   </div>
                 </div>
               </div>
             </div>
-          </td>
-        `;
-        tbody.appendChild(trExpand);
-
-        // Event listener para expandir/contrair
-        tr.addEventListener('click', (e) => {
-          if (!e.target.closest('button')) {
-            toggleExpand(row.id);
-          }
-        });
-      });
-    }
-
-    function toggleExpand(id) {
-      const pane = el(`expand-${id}`);
-      if (!pane) return;
-      const isHidden = pane.getAttribute('aria-hidden') === 'true';
-      pane.setAttribute('aria-hidden', !isHidden);
+            
+            <div class="flex flex-col gap-2 ml-4 shrink-0">
+              <div class="flex justify-end mb-2">
+                ${statusChips(row)}
+              </div>
+              <div class="flex gap-2">
+                <button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-150 text-sm" data-act="send" data-id="${row.id}">Enviar</button>
+                <button class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-150 text-sm" data-act="close" data-id="${row.id}">Encerrar</button>
+                <button class="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 bg-white hover:bg-red-50 transition-colors duration-150 text-sm dark:bg-red-900/20 dark:border-red-700 dark:hover:bg-red-900/30" data-act="del" data-id="${row.id}">Remover</button>
+              </div>
+              <div class="text-xs opacity-70 text-right mono">
+                ${maskPhone(row.telefone)}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function render() {
@@ -1215,26 +1184,6 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       if (act === 'del') {
         const id = t.dataset.id;
         delRow(id);
-      }
-    });
-
-    document.addEventListener('input', (e) => {
-      const t = e.target;
-      
-      if (t.dataset.act === 'edit-eta') {
-        const id = t.dataset.id;
-        const row = LIST.find(r => r.id === id);
-        if (row) {
-          row.etaRaw = t.value.trim();
-          const info = parseETA(row.etaRaw);
-          const span = el(`eta-info-${id}`);
-          if (span) {
-            span.innerHTML = info.hora 
-              ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` 
-              : '—';
-          }
-          save();
-        }
       }
     });
 

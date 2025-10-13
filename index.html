@@ -226,22 +226,82 @@
       transform: translateX(4px);
     }
 
-    .info-line {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 4px;
+    .info-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 12px;
+      align-items: start;
     }
 
     .info-label {
       font-weight: 600;
       color: var(--primary);
-      min-width: 80px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .info-content {
-      flex: 1;
+      font-size: 0.875rem;
       line-height: 1.4;
+    }
+
+    .cliente-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cliente-nome {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .chamado-numero {
+      background: var(--primary);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .btn-compact {
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+    }
+
+    .btn-whatsapp:hover {
+      background: #128C7E;
+      transform: translateY(-1px);
+    }
+
+    .btn-link {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-link:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
     }
   </style>
 </head>
@@ -494,6 +554,35 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏</textarea>
     <div class="p-5 border-t border-opacity-20 flex items-center justify-end gap-2">
       <button id="dlgSendCopy" class="btn-secondary rounded-lg px-3 py-2">Copiar</button>
       <button id="dlgSendConfirm" class="btn-primary rounded-lg text-white px-4 py-2">Abrir WhatsApp</button>
+    </div>
+  </dialog>
+
+  <!-- Modal Link WhatsApp -->
+  <dialog id="dlgLink" class="rounded-2xl p-0 w-full max-w-2xl card border">
+    <div class="p-5 border-b border-opacity-20 flex items-center justify-between">
+      <h3 class="font-semibold">Link do WhatsApp</h3>
+      <button id="dlgLinkClose" class="btn-secondary rounded-lg px-2 py-1 text-sm">Fechar</button>
+    </div>
+    <div class="p-5 space-y-4">
+      <div class="text-xs opacity-70">Destinatário</div>
+      <div class="flex items-center justify-between">
+        <div class="font-medium" id="dlgLinkNome"></div>
+        <div class="mono opacity-70" id="dlgLinkTel"></div>
+      </div>
+
+      <div class="text-xs opacity-70">Mensagem</div>
+      <div class="p-3 rounded-lg border mono bg-gray-50 dark:bg-gray-900 max-h-40 overflow-y-auto">
+        <pre id="dlgLinkMsg" class="whitespace-pre-wrap"></pre>
+      </div>
+
+      <div class="text-xs opacity-70">Link do WhatsApp</div>
+      <div class="flex gap-2">
+        <input id="dlgLinkUrl" type="text" readonly class="flex-1 rounded-lg border px-3 py-2 mono text-sm bg-gray-50 dark:bg-gray-900" />
+        <button id="dlgLinkCopy" class="btn-secondary rounded-lg px-3 py-2 text-sm">Copiar</button>
+      </div>
+    </div>
+    <div class="p-5 border-t border-opacity-20 flex items-center justify-end gap-2">
+      <button id="dlgLinkOpen" class="btn-primary rounded-lg text-white px-4 py-2">Abrir WhatsApp</button>
     </div>
   </dialog>
 
@@ -932,50 +1021,53 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       
       return `
         <div class="chamado-item card p-4 draggable-item" data-id="${row.id}" draggable="true">
-          <div class="flex items-start justify-between">
+          <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">
-              <div class="flex items-start gap-3 mb-3">
+              <div class="cliente-header">
                 <div class="position-badge">${index + 1}</div>
-                <div class="flex-1 min-w-0">
-                  <div class="info-line">
-                    <span class="info-label">${row.chamado || '—'}</span>
-                    <span class="info-content font-semibold">${highlightText(row.nome, SEARCH_TERM)}</span>
-                  </div>
-                  <div class="info-line">
-                    <span class="info-label">Serviço</span>
-                    <span class="info-content">${highlightText(row.servico || '—', SEARCH_TERM)}</span>
-                  </div>
-                  <div class="info-line">
-                    <span class="info-label">Produto</span>
-                    <span class="info-content">${highlightText(row.produto || '—', SEARCH_TERM)}</span>
-                  </div>
-                  <div class="info-line">
-                    <span class="info-label">Endereço</span>
-                    <span class="info-content">${highlightText(row.endereco || '—', SEARCH_TERM)}</span>
-                  </div>
-                  <div class="info-line">
-                    <span class="info-label">Previsão</span>
-                    <span class="info-content">${previsao}</span>
-                  </div>
-                  <div class="info-line">
-                    <span class="info-label">Técnico</span>
-                    <span class="info-content">${highlightText(row.tecnico || '—', SEARCH_TERM)}</span>
-                  </div>
-                </div>
+                <div class="cliente-nome">${highlightText(row.nome, SEARCH_TERM)}</div>
+                ${row.chamado ? `<div class="chamado-numero">${row.chamado}</div>` : ''}
+              </div>
+              
+              <div class="info-grid">
+                <div class="info-label">Serviço:</div>
+                <div class="info-content">${highlightText(row.servico || '—', SEARCH_TERM)}</div>
+                
+                <div class="info-label">Produto:</div>
+                <div class="info-content">${highlightText(row.produto || '—', SEARCH_TERM)}</div>
+                
+                <div class="info-label">Endereço:</div>
+                <div class="info-content">${highlightText(row.endereco || '—', SEARCH_TERM)}</div>
+                
+                <div class="info-label">Previsão:</div>
+                <div class="info-content">${previsao}</div>
+                
+                <div class="info-label">Técnico:</div>
+                <div class="info-content">${highlightText(row.tecnico || '—', SEARCH_TERM)}</div>
+                
+                <div class="info-label">Telefone:</div>
+                <div class="info-content mono">${maskPhone(row.telefone)}</div>
               </div>
             </div>
             
-            <div class="flex flex-col gap-2 ml-4 shrink-0">
-              <div class="flex justify-end mb-2">
+            <div class="shrink-0 flex flex-col gap-3 min-w-[140px]">
+              <div class="text-right">
                 ${statusChips(row)}
               </div>
-              <div class="flex gap-2">
-                <button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-150 text-sm" data-act="send" data-id="${row.id}">Enviar</button>
-                <button class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-150 text-sm" data-act="close" data-id="${row.id}">Encerrar</button>
-                <button class="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 bg-white hover:bg-red-50 transition-colors duration-150 text-sm dark:bg-red-900/20 dark:border-red-700 dark:hover:bg-red-900/30" data-act="del" data-id="${row.id}">Remover</button>
-              </div>
-              <div class="text-xs opacity-70 text-right mono">
-                ${maskPhone(row.telefone)}
+              
+              <div class="actions-grid">
+                <button class="btn-compact btn-whatsapp" data-act="send" data-id="${row.id}">
+                  Enviar
+                </button>
+                <button class="btn-compact btn-link" data-act="link" data-id="${row.id}">
+                  Criar Link
+                </button>
+                <button class="btn-compact bg-indigo-600 text-white hover:bg-indigo-700" data-act="close" data-id="${row.id}">
+                  Encerrar
+                </button>
+                <button class="btn-compact border border-red-300 text-red-600 bg-white hover:bg-red-50 dark:bg-red-900/20 dark:border-red-700 dark:hover:bg-red-900/30" data-act="del" data-id="${row.id}">
+                  Remover
+                </button>
               </div>
             </div>
           </div>
@@ -986,6 +1078,23 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     function render() {
       el('lista-carros').innerHTML = '';
       CARROS.forEach(renderCarroSection);
+    }
+
+    // ========= FUNÇÃO CRIAR LINK =========
+    function createWhatsAppLink(row) {
+      const mensagem = getRowMessage(row, true);
+      const numero = ensureBR(row.telefone);
+      const url = buildWAUrl(numero, mensagem);
+      
+      // Mostrar modal com o link
+      const dlg = el('dlgLink');
+      el('dlgLinkNome').textContent = row.nome;
+      el('dlgLinkTel').textContent = maskPhone(row.telefone);
+      el('dlgLinkMsg').textContent = mensagem;
+      el('dlgLinkUrl').value = url;
+      dlg.showModal();
+      
+      addToHistory('Link criado', `Link do WhatsApp para ${row.nome}`);
     }
 
     // ========= AÇÕES =========
@@ -1175,6 +1284,12 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         if (row) openSendModal(row);
       }
       
+      if (act === 'link') {
+        const id = t.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if (row) createWhatsAppLink(row);
+      }
+      
       if (act === 'close') {
         const id = t.dataset.id;
         const row = LIST.find(r => r.id === id);
@@ -1318,6 +1433,24 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       el('dlgSend').close();
       addToHistory('Notificação enviada', `Para ${PREVIEW_ROW.nome} (${maskPhone(PREVIEW_ROW.telefone)})`);
       showToast(`Notificação enviada para ${PREVIEW_ROW.nome}`, 'success');
+    });
+
+    // Modal Link WhatsApp
+    el('dlgLinkClose').addEventListener('click', () => el('dlgLink').close());
+    
+    el('dlgLinkCopy').addEventListener('click', () => {
+      const urlInput = el('dlgLinkUrl');
+      urlInput.select();
+      navigator.clipboard.writeText(urlInput.value)
+        .then(() => {
+          showToast('Link copiado para a área de transferência', 'success');
+        });
+    });
+    
+    el('dlgLinkOpen').addEventListener('click', () => {
+      const url = el('dlgLinkUrl').value;
+      openURL(url);
+      el('dlgLink').close();
     });
 
     // ========= INICIALIZAÇÃO =========

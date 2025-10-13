@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --primary: #10b981;
@@ -302,6 +303,65 @@
     .btn-link:hover {
       background: #2563eb;
       transform: translateY(-1px);
+    }
+
+    /* Novos estilos para o formato solicitado */
+    .servico-linha {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .servico-label {
+      font-weight: 600;
+      min-width: 80px;
+      color: var(--primary);
+    }
+
+    .servico-content {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .endereco-link {
+      color: #3b82f6;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .endereco-link:hover {
+      color: #2563eb;
+    }
+
+    .edit-btn {
+      background: #f59e0b;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .edit-btn:hover {
+      background: #d97706;
+      transform: scale(1.1);
+    }
+
+    .status-enviado {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+
+    .status-retorno {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: white;
     }
   </style>
 </head>
@@ -600,6 +660,56 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏</textarea>
     </div>
   </dialog>
 
+  <!-- Modal Editar -->
+  <dialog id="dlgEdit" class="rounded-2xl p-0 w-full max-w-2xl card border">
+    <div class="p-5 border-b border-opacity-20 flex items-center justify-between">
+      <h3 class="font-semibold">Editar Informações</h3>
+      <button id="dlgEditClose" class="btn-secondary rounded-lg px-2 py-1 text-sm">Fechar</button>
+    </div>
+    <div class="p-5 space-y-4">
+      <div class="text-xs opacity-70">Editar informações do cliente</div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Nome</label>
+          <input id="editNome" type="text" class="w-full rounded-xl border px-4 py-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Telefone</label>
+          <input id="editTelefone" type="text" class="w-full rounded-xl border px-4 py-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Serviço</label>
+          <input id="editServico" type="text" class="w-full rounded-xl border px-4 py-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Produto</label>
+          <input id="editProduto" type="text" class="w-full rounded-xl border px-4 py-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Endereço</label>
+          <input id="editEndereco" type="text" class="w-full rounded-xl border px-4 py-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Previsão</label>
+          <input id="editPrevisao" type="text" class="w-full rounded-xl border px-4 py-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Técnico</label>
+          <input id="editTecnico" type="text" class="w-full rounded-xl border px-4 py-2.5" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Chamado</label>
+          <input id="editChamado" type="text" class="w-full rounded-xl border px-4 py-2.5" />
+        </div>
+      </div>
+    </div>
+    <div class="p-5 border-t border-opacity-20 flex items-center justify-end gap-2">
+      <button id="dlgEditCancel" class="btn-secondary rounded-lg px-3 py-2">Cancelar</button>
+      <button id="dlgEditSave" class="btn-primary rounded-lg text-white px-4 py-2">Salvar</button>
+    </div>
+  </dialog>
+
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
@@ -767,6 +877,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     let PREVIEW_ROW = null;
     let SEARCH_TERM = '';
     let DRAGGED_ITEM = null;
+    let EDITING_ROW = null;
 
     function save() {
       try {
@@ -866,11 +977,11 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     // ========= STATUS CHIPS =========
     function statusChips(row) {
       const envio = row.sentNotifyAt
-        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 status-chip dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-800">Envio ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentNotifyAt)}</span></span>`
+        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium status-enviado status-chip">Envio ✓ <span class='ml-1 opacity-90'>${fromNow(row.sentNotifyAt)}</span></span>`
         : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">Envio pendente</span>`;
         
       const retorno = row.sentCloseAt
-        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 status-chip dark:bg-indigo-900/30 dark:text-indigo-300 dark:ring-indigo-800">Retorno ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentCloseAt)}</span></span>`
+        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium status-retorno status-chip">Retorno ✓ <span class='ml-1 opacity-90'>${fromNow(row.sentCloseAt)}</span></span>`
         : (row.sentNotifyAt
           ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200 status-chip dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-800">Retorno pendente</span>`
           : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">Retorno —</span>`);
@@ -1027,26 +1138,43 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
                 <div class="position-badge">${index + 1}</div>
                 <div class="cliente-nome">${highlightText(row.nome, SEARCH_TERM)}</div>
                 ${row.chamado ? `<div class="chamado-numero">${row.chamado}</div>` : ''}
+                <button class="edit-btn ml-auto" data-act="edit" data-id="${row.id}">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
               </div>
               
-              <div class="info-grid">
-                <div class="info-label">Serviço:</div>
-                <div class="info-content">${highlightText(row.servico || '—', SEARCH_TERM)}</div>
-                
-                <div class="info-label">Produto:</div>
-                <div class="info-content">${highlightText(row.produto || '—', SEARCH_TERM)}</div>
-                
-                <div class="info-label">Endereço:</div>
-                <div class="info-content">${highlightText(row.endereco || '—', SEARCH_TERM)}</div>
-                
-                <div class="info-label">Previsão:</div>
-                <div class="info-content">${previsao}</div>
-                
-                <div class="info-label">Técnico:</div>
-                <div class="info-content">${highlightText(row.tecnico || '—', SEARCH_TERM)}</div>
-                
-                <div class="info-label">Telefone:</div>
-                <div class="info-content mono">${maskPhone(row.telefone)}</div>
+              <div class="servico-linha">
+                <div class="servico-label">Serviço:</div>
+                <div class="servico-content">${highlightText(row.servico || '—', SEARCH_TERM)}</div>
+              </div>
+              
+              <div class="servico-linha">
+                <div class="servico-label">Cliente:</div>
+                <div class="servico-content">${highlightText(row.produto || '—', SEARCH_TERM)}</div>
+              </div>
+              
+              <div class="servico-linha">
+                <div class="servico-label">Endereço:</div>
+                <div class="servico-content">
+                  <span class="endereco-link" onclick="abrirMaps('${escapeHtml(row.endereco || '')}')">
+                    ${highlightText(row.endereco || '—', SEARCH_TERM)}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="servico-linha">
+                <div class="servico-label">Previsão:</div>
+                <div class="servico-content">${previsao}</div>
+              </div>
+              
+              <div class="servico-linha">
+                <div class="servico-label">Técnico:</div>
+                <div class="servico-content">${highlightText(row.tecnico || '—', SEARCH_TERM)}</div>
+              </div>
+              
+              <div class="servico-linha">
+                <div class="servico-label">Telefone:</div>
+                <div class="servico-content mono">${maskPhone(row.telefone)}</div>
               </div>
             </div>
             
@@ -1075,6 +1203,12 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       `;
     }
 
+    function abrirMaps(endereco) {
+      if (!endereco || endereco === '—') return;
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
+      window.open(url, '_blank');
+    }
+
     function render() {
       el('lista-carros').innerHTML = '';
       CARROS.forEach(renderCarroSection);
@@ -1095,6 +1229,41 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       dlg.showModal();
       
       addToHistory('Link criado', `Link do WhatsApp para ${row.nome}`);
+    }
+
+    // ========= EDIÇÃO =========
+    function openEditModal(row) {
+      EDITING_ROW = row;
+      const dlg = el('dlgEdit');
+      el('editNome').value = row.nome || '';
+      el('editTelefone').value = row.telefone || '';
+      el('editServico').value = row.servico || '';
+      el('editProduto').value = row.produto || '';
+      el('editEndereco').value = row.endereco || '';
+      el('editPrevisao').value = row.etaRaw || '';
+      el('editTecnico').value = row.tecnico || '';
+      el('editChamado').value = row.chamado || '';
+      dlg.showModal();
+    }
+
+    function saveEdit() {
+      if (!EDITING_ROW) return;
+      
+      EDITING_ROW.nome = el('editNome').value.trim();
+      EDITING_ROW.telefone = el('editTelefone').value.trim();
+      EDITING_ROW.servico = el('editServico').value.trim();
+      EDITING_ROW.produto = el('editProduto').value.trim();
+      EDITING_ROW.endereco = el('editEndereco').value.trim();
+      EDITING_ROW.etaRaw = el('editPrevisao').value.trim();
+      EDITING_ROW.tecnico = el('editTecnico').value.trim();
+      EDITING_ROW.chamado = el('editChamado').value.trim();
+      
+      save();
+      render();
+      el('dlgEdit').close();
+      
+      addToHistory('Informações editadas', `Dados de ${EDITING_ROW.nome} atualizados`);
+      showToast(`Informações de ${EDITING_ROW.nome} atualizadas`, 'success');
     }
 
     // ========= AÇÕES =========
@@ -1296,6 +1465,12 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         if (row) openWAClose(row);
       }
       
+      if (act === 'edit') {
+        const id = t.dataset.id;
+        const row = LIST.find(r => r.id === id);
+        if (row) openEditModal(row);
+      }
+      
       if (act === 'del') {
         const id = t.dataset.id;
         delRow(id);
@@ -1452,6 +1627,11 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       openURL(url);
       el('dlgLink').close();
     });
+
+    // Modal Editar
+    el('dlgEditClose').addEventListener('click', () => el('dlgEdit').close());
+    el('dlgEditCancel').addEventListener('click', () => el('dlgEdit').close());
+    el('dlgEditSave').addEventListener('click', saveEdit);
 
     // ========= INICIALIZAÇÃO =========
     function init() {

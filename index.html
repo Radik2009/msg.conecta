@@ -1,118 +1,128 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aviso ao Cliente • Smart Conecta</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Conecta • Sistema de Notificação</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- SheetJS for Excel import/export -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
-      --brand: #10b981;
-      --brand-2: #059669;
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --bg-light: #f8fafc;
+      --bg-dark: #0f172a;
+      --text-light: #1e293b;
+      --text-dark: #f1f5f9;
+      --card-light: #ffffff;
+      --card-dark: #1e293b;
+      --border-light: #e2e8f0;
+      --border-dark: #334155;
     }
-    
+
+    [data-theme="dark"] {
+      --bg: var(--bg-dark);
+      --text: var(--text-dark);
+      --card: var(--card-dark);
+      --border: var(--border-dark);
+    }
+
+    [data-theme="light"] {
+      --bg: var(--bg-light);
+      --text: var(--text-light);
+      --card: var(--card-light);
+      --border: var(--border-light);
+    }
+
     body {
       font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: all 0.3s ease;
     }
-    
-    .gradient-bg {
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+
+    .card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
     }
-    
-    .card-shadow {
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
-    }
-    
+
     .btn-primary {
-      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
-      transition: all .2s ease;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      transition: all 0.2s ease;
     }
-    
+
     .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(16,185,129,.4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
     }
-    
+
     .btn-secondary {
-      transition: all .2s ease;
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
     }
-    
+
     .btn-secondary:hover {
       transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
+
+    .theme-toggle {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background: var(--border);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .theme-toggle::after {
+      transform: translateX(30px);
+      background: #fbbf24;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .status-chip {
-      transition: all .2s ease;
+      transition: all 0.2s ease;
     }
-    
+
     .status-chip:hover {
       transform: scale(1.05);
     }
-    
-    .fade-in {
-      animation: fadeIn .25s ease-in-out;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
+
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 10;
-      background-color: rgba(255,255,255,.95);
+      background-color: var(--card);
       backdrop-filter: blur(8px);
     }
-    
-    .nowrap {
-      white-space: nowrap;
-    }
-    
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-    
-    textarea {
-      resize: vertical;
-    }
-    
-    dialog::backdrop {
-      background: rgba(0,0,0,.25);
-    }
-    
-    .row-expand {
-      transition: max-height .25s ease, opacity .2s ease;
-    }
-    
-    .row-expand[aria-hidden="true"] {
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-    }
-    
-    .row-expand[aria-hidden="false"] {
-      max-height: 800px;
-      opacity: 1;
-    }
-    
-    .row-summary {
-      cursor: pointer;
-    }
-    
-    .sticky-actions {
-      position: sticky;
-      right: 0;
-      background: #fff;
-    }
-    
+
     .toast {
       position: fixed;
       bottom: 20px;
@@ -126,97 +136,105 @@
       opacity: 0;
       transition: all 0.3s ease;
     }
-    
+
     .toast.show {
       transform: translateY(0);
       opacity: 1;
     }
-    
+
     .toast.success {
-      background-color: #10b981;
+      background-color: var(--primary);
     }
-    
+
     .toast.error {
       background-color: #ef4444;
     }
-    
+
     .toast.info {
       background-color: #3b82f6;
     }
-    
+
     .history-item {
-      border-left: 3px solid #10b981;
+      border-left: 3px solid var(--primary);
       padding-left: 12px;
       margin-bottom: 8px;
     }
-    
+
     .history-item.error {
       border-left-color: #ef4444;
     }
-    
+
     .history-item.warning {
       border-left-color: #f59e0b;
     }
-    
-    .dragging {
-      opacity: .5;
+
+    input, textarea, select {
+      background-color: var(--card);
+      color: var(--text);
+      border-color: var(--border);
     }
-    
-    .drop-target {
-      outline: 2px dashed #10b981;
-      outline-offset: -2px;
-      background: #f0fdf4;
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      ring-color: var(--primary);
     }
-    
-    .drop-zone {
-      min-height: 10px;
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
-    
+
     mark {
-      background-color: #fef08a;
+      background-color: rgba(254, 240, 138, 0.5);
       padding: 0.1rem 0.2rem;
       border-radius: 0.25rem;
     }
   </style>
 </head>
-<body class="gradient-bg text-gray-900 min-h-screen">
+<body data-theme="light" class="min-h-screen">
   <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
 
     <!-- Header -->
-    <header class="flex items-center justify-between gap-4 flex-wrap bg-white rounded-2xl card-shadow p-5 sticky-header">
+    <header class="card rounded-2xl p-5 sticky-header flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-3">
-        <div class="bg-emerald-100 p-2 rounded-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
+        <div class="bg-emerald-100 p-2 rounded-xl dark:bg-emerald-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/>
           </svg>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Notificação ao Cliente</h1>
-          <p class="text-sm text-gray-600">Fluxo: <b>Adicionar contatos ➜ Enviar</b>. Abre sempre no <b>WhatsApp Web</b>.</p>
+          <h1 class="text-2xl font-bold">Sistema de Notificação</h1>
+          <p class="text-sm opacity-70">Smart Conecta • Adicionar contatos ➜ Enviar mensagens</p>
         </div>
       </div>
-      <div class="flex flex-wrap gap-2 items-center">
-        <button id="btnOpenHistory" class="rounded-xl border border-gray-300 px-3 py-2 bg-white hover:bg-gray-50 font-medium flex items-center gap-2" title="Histórico de ações (log)">
+      <div class="flex flex-wrap gap-4 items-center">
+        <!-- Tema escuro/claro -->
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+          <div class="theme-toggle" id="themeToggle"></div>
+        </div>
+
+        <button id="btnOpenHistory" class="btn-secondary rounded-xl px-3 py-2 font-medium flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           Histórico
         </button>
 
-        <!-- Excel import/export -->
-        <button id="btnImportXLSX" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+        <button id="btnImportXLSX" class="btn-secondary rounded-xl px-4 py-2.5 font-medium flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
           </svg>
           Importar Excel
         </button>
-        <button id="btnExportXLSX" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+        <button id="btnExportXLSX" class="btn-secondary rounded-xl px-4 py-2.5 font-medium flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
           Exportar Excel
         </button>
-        <button id="btnLimparLista" class="rounded-xl border border-red-300 px-4 py-2.5 bg-white hover:bg-red-50 text-red-600 font-medium flex items-center gap-2">
+        <button id="btnLimparLista" class="rounded-xl border border-red-300 px-4 py-2.5 bg-white hover:bg-red-50 text-red-600 font-medium flex items-center gap-2 dark:bg-red-900/20 dark:border-red-700 dark:hover:bg-red-900/30">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
           </svg>
@@ -226,57 +244,31 @@
       </div>
     </header>
 
-    <!-- Integração Airtable -->
-    <section class="bg-white rounded-2xl card-shadow p-6 fade-in">
-      <details open>
-        <summary class="list-none px-1 py-2 cursor-pointer flex items-center justify-between">
-          <span class="font-bold text-lg text-gray-800">Integração com Airtable</span>
-          <span class="text-sm text-gray-500">clique para configurar</span>
-        </summary>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div>
-            <label class="block text-sm text-gray-700 mb-1">Base ID</label>
-            <input id="airtableBaseId" class="w-full rounded-xl border border-gray-300 px-4 py-2.5" value="app6PQ0NV8WKc1Ztx" placeholder="appxxxxxxxxxxxxxx">
-          </div>
-          <div>
-            <label class="block text-sm text-gray-700 mb-1">API Key</label>
-            <input id="airtableApiKey" class="w-full rounded-xl border border-gray-300 px-4 py-2.5" value="pateTw2zJZUvUDRjn" placeholder="patxxxxxxxxxxxxxx">
-          </div>
-        </div>
-        <div class="flex gap-2 mt-4">
-          <button id="btnPullAirtable" class="rounded-lg border px-3 py-2 bg-white hover:bg-gray-50">Buscar do Airtable</button>
-          <button id="btnPushAirtable" class="btn-primary rounded-lg text-white px-4 py-2">Enviar p/ Airtable</button>
-          <button id="btnTestAirtable" class="rounded-lg border border-blue-300 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100">Testar Conexão</button>
-        </div>
-        <p class="text-xs text-gray-500 mt-2" id="airtableStatus">Status: Não testado</p>
-      </details>
-    </section>
-
     <!-- Configuração de Templates -->
-    <section class="bg-white rounded-2xl card-shadow p-0 fade-in overflow-hidden">
-      <details id="tplDetails">
-        <summary class="list-none px-6 py-4 cursor-pointer flex items-center justify-between">
-          <span class="font-bold text-lg text-gray-800 flex items-center gap-2">
+    <section class="card rounded-2xl p-0 fade-in overflow-hidden">
+      <details id="tplDetails" class="group">
+        <summary class="list-none px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-opacity-50 transition-colors">
+          <span class="font-bold text-lg flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
             Configuração de Templates
           </span>
-          <span class="text-sm text-gray-500">clique para expandir</span>
+          <span class="text-sm opacity-70 group-open:rotate-180 transition-transform">▼</span>
         </summary>
-        <div class="p-6 space-y-5 border-t">
+        <div class="p-6 space-y-5 border-t border-opacity-20">
           <div class="flex items-start gap-4 flex-wrap">
             <div class="grow">
-              <label class="block text-sm font-medium mb-2 text-gray-700" for="template">Modelo de mensagem (placeholders)</label>
-              <textarea id="template" rows="5" class="w-full rounded-xl border border-gray-300 px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
-              <p class="text-xs text-gray-500 mt-2">Placeholders:
-                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{nome}}</span>,
-                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{telefone}}</span>,
-                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{hora}}</span>,
-                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{minutos}}</span>,
-                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{servico}}</span>,
-                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{chamado}}</span>,
-                <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">{{tecnico}}</span>.
+              <label class="block text-sm font-medium mb-2" for="template">Modelo de mensagem</label>
+              <textarea id="template" rows="5" class="w-full rounded-xl border px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
+              <p class="text-xs opacity-70 mt-2">Placeholders:
+                <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{nome}}</span>,
+                <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{telefone}}</span>,
+                <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{hora}}</span>,
+                <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{minutos}}</span>,
+                <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{servico}}</span>,
+                <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{chamado}}</span>,
+                <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">{{tecnico}}</span>.
               </p>
             </div>
             <div class="flex flex-col gap-2 shrink-0">
@@ -286,7 +278,7 @@
                 </svg>
                 Salvar padrão
               </button>
-              <button id="btnResetTPL" class="btn-secondary rounded-xl border border-gray-300 px-4 py-2.5 bg-white hover:bg-gray-50 font-medium flex items-center gap-2">
+              <button id="btnResetTPL" class="btn-secondary rounded-xl px-4 py-2.5 font-medium flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
@@ -296,9 +288,9 @@
           </div>
           <div class="flex items-start gap-4 flex-wrap">
             <div class="grow">
-              <label class="block text-sm font-medium mb-2 text-gray-700" for="templateEnc">Modelo de <b>encerramento</b></label>
-              <textarea id="templateEnc" rows="4" class="w-full rounded-xl border border-gray-300 px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
-              <p class="text-xs text-gray-500 mt-2">Ex.: <span class="mono bg-gray-100 px-1.5 py-0.5 rounded">Seu chamado foi finalizado. Seguem as fotos do serviço. Qualquer dúvida, estou à disposição.</span></p>
+              <label class="block text-sm font-medium mb-2" for="templateEnc">Modelo de <b>encerramento</b></label>
+              <textarea id="templateEnc" rows="4" class="w-full rounded-xl border px-4 py-3 mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"></textarea>
+              <p class="text-xs opacity-70 mt-2">Ex.: <span class="mono bg-opacity-20 px-1.5 py-0.5 rounded">Seu chamado foi finalizado. Seguem as fotos do serviço. Qualquer dúvida, estou à disposição.</span></p>
             </div>
           </div>
         </div>
@@ -306,25 +298,25 @@
     </section>
 
     <!-- Form para adicionar linhas -->
-    <section class="bg-white rounded-2xl card-shadow p-6 space-y-5 fade-in">
-      <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+    <section class="card rounded-2xl p-6 space-y-5 fade-in">
+      <h2 class="font-bold text-lg flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
         </svg>
-        Adicionar à lista (somente cadastro)
+        Adicionar à lista
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-4 items-end">
         <div>
-          <label for="nome" class="block text-sm font-medium mb-2 text-gray-700">Nome</label>
-          <input id="nome" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Ex.: Maria Souza" />
+          <label for="nome" class="block text-sm font-medium mb-2">Nome</label>
+          <input id="nome" type="text" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Ex.: Maria Souza" />
         </div>
         <div>
-          <label for="telefone" class="block text-sm font-medium mb-2 text-gray-700">Telefone (WhatsApp)</label>
-          <input id="telefone" type="tel" inputmode="numeric" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="11980195451" />
+          <label for="telefone" class="block text-sm font-medium mb-2">Telefone (WhatsApp)</label>
+          <input id="telefone" type="tel" inputmode="numeric" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="11980195451" />
         </div>
         <div>
-          <label for="carro" class="block text-sm font-medium mb-2 text-gray-700">Carro <span class="text-red-500">*</span></label>
-          <select id="carro" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+          <label for="carro" class="block text-sm font-medium mb-2">Carro <span class="text-red-500">*</span></label>
+          <select id="carro" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
             <option value="">Selecione...</option>
             <option value="51">51</option>
             <option value="84">84</option>
@@ -336,20 +328,20 @@
           </select>
         </div>
         <div>
-          <label for="eta" class="block text-sm font-medium mb-2 text-gray-700">Tempo previsto (opcional)</label>
-          <input id="eta" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="45m ou 16:30" />
+          <label for="eta" class="block text-sm font-medium mb-2">Tempo previsto</label>
+          <input id="eta" type="text" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="45m ou 16:30" />
         </div>
         <div>
-          <label for="servico" class="block text-sm font-medium mb-2 text-gray-700">Serviço (opcional)</label>
-          <input id="servico" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Manutenção impressora" />
+          <label for="servico" class="block text-sm font-medium mb-2">Serviço</label>
+          <input id="servico" type="text" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Manutenção impressora" />
         </div>
         <div>
-          <label for="chamado" class="block text-sm font-medium mb-2 text-gray-700">Chamado (opcional)</label>
-          <input id="chamado" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="28832" />
+          <label for="chamado" class="block text-sm font-medium mb-2">Chamado</label>
+          <input id="chamado" type="text" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="28832" />
         </div>
         <div>
-          <label for="tecnico" class="block text-sm font-medium mb-2 text-gray-700">Técnico (opcional)</label>
-          <input id="tecnico" type="text" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Leandro" />
+          <label for="tecnico" class="block text-sm font-medium mb-2">Técnico</label>
+          <input id="tecnico" type="text" class="w-full rounded-xl border px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Leandro" />
         </div>
         <div class="flex gap-3">
           <button id="btnAdd" class="btn-primary rounded-xl px-5 py-2.5 text-white font-medium flex items-center gap-2 self-end">
@@ -363,75 +355,75 @@
     </section>
 
     <!-- BUSCA -->
-    <section id="sec-busca" class="bg-white rounded-2xl card-shadow p-6 fade-in">
-      <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+    <section id="sec-busca" class="card rounded-2xl p-6 fade-in">
+      <h2 class="font-bold text-lg flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         Buscar
       </h2>
       <div class="relative">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        <input id="busca" type="text" class="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Buscar por nome, chamado, telefone, serviço, técnico..." />
+        <input id="busca" type="text" class="w-full rounded-xl border pl-10 pr-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" placeholder="Buscar por nome, chamado, telefone, serviço, técnico..." />
       </div>
-      <p class="text-xs text-gray-500 mt-2">A busca filtra e só mostra as seções com resultados.</p>
+      <p class="text-xs opacity-70 mt-2">A busca filtra e só mostra as seções com resultados.</p>
     </section>
 
     <!-- Lista de envios por carro -->
     <section id="lista-carros" class="space-y-4"></section>
 
-    <footer class="text-center text-xs text-gray-500 py-4">Sistema Smart Conecta • Dados salvos localmente + Airtable</footer>
+    <footer class="text-center text-xs opacity-70 py-4">Sistema Smart Conecta • Dados salvos localmente</footer>
   </main>
 
   <!-- Modal Envio -->
-  <dialog id="dlgSend" class="rounded-2xl p-0 w-full max-w-2xl">
-    <div class="p-5 border-b flex items-center justify-between">
+  <dialog id="dlgSend" class="rounded-2xl p-0 w-full max-w-2xl card border">
+    <div class="p-5 border-b border-opacity-20 flex items-center justify-between">
       <h3 class="font-semibold">Enviar mensagem</h3>
-      <button id="dlgSendClose" class="rounded-lg border px-2 py-1 text-sm">Fechar</button>
+      <button id="dlgSendClose" class="btn-secondary rounded-lg px-2 py-1 text-sm">Fechar</button>
     </div>
     <div class="p-5 space-y-4">
-      <div class="text-xs text-gray-500">Destinatário</div>
+      <div class="text-xs opacity-70">Destinatário</div>
       <div class="flex items-center justify-between">
         <div class="font-medium" id="dlgSendNome"></div>
-        <div class="mono text-gray-600" id="dlgSendTel"></div>
+        <div class="mono opacity-70" id="dlgSendTel"></div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div class="md:col-span-2">
-          <label class="text-sm text-gray-700">Tempo previsto (ex.: 45m ou 16:30)</label>
+          <label class="text-sm">Tempo previsto (ex.: 45m ou 16:30)</label>
           <input id="dlgSendEta" type="text" class="w-full rounded-xl border p-2.5" />
-          <p class="text-xs text-gray-500 mt-1" id="dlgSendEtaInfo"></p>
+          <p class="text-xs opacity-70 mt-1" id="dlgSendEtaInfo"></p>
         </div>
         <div class="flex items-end">
-          <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+          <label class="inline-flex items-center gap-2 text-sm">
             <input type="checkbox" id="dlgSendHora" class="rounded border-gray-300">
             Incluir horário na mensagem
           </label>
         </div>
       </div>
 
-      <div class="text-xs text-gray-500">Mensagem</div>
+      <div class="text-xs opacity-70">Mensagem</div>
       <textarea id="dlgSendMsg" rows="8" class="w-full rounded-xl border p-3 mono"></textarea>
 
       <div class="flex items-center gap-2">
-        <button id="btnReagendar" class="rounded-lg border border-red-300 px-3 py-2 bg-white text-red-600 hover:bg-red-50">Remover para Reagendamento</button>
+        <button id="btnReagendar" class="rounded-lg border border-red-300 px-3 py-2 bg-white text-red-600 hover:bg-red-50 dark:bg-red-900/20 dark:border-red-700 dark:hover:bg-red-900/30">Remover para Reagendamento</button>
       </div>
     </div>
-    <div class="p-5 border-t flex items-center justify-end gap-2">
-      <button id="dlgSendCopy" class="rounded-lg border px-3 py-2 bg-white">Copiar</button>
+    <div class="p-5 border-t border-opacity-20 flex items-center justify-end gap-2">
+      <button id="dlgSendCopy" class="btn-secondary rounded-lg px-3 py-2">Copiar</button>
       <button id="dlgSendConfirm" class="btn-primary rounded-lg text-white px-4 py-2">Abrir WhatsApp</button>
     </div>
   </dialog>
 
   <!-- Modal Histórico -->
-  <dialog id="dlgHistory" class="rounded-2xl p-0 w-full max-w-2xl">
-    <div class="p-5 border-b flex items-center justify-between">
+  <dialog id="dlgHistory" class="rounded-2xl p-0 w-full max-w-2xl card border">
+    <div class="p-5 border-b border-opacity-20 flex items-center justify-between">
       <h3 class="font-semibold">Histórico de Ações</h3>
       <div class="flex items-center gap-2">
-        <button id="btnClearHistory" class="rounded-lg border border-gray-300 px-3 py-2 bg-white hover:bg-gray-50 text-sm">Limpar</button>
-        <button id="dlgHistoryClose" class="rounded-lg border px-2 py-1 text-sm">Fechar</button>
+        <button id="btnClearHistory" class="btn-secondary rounded-lg px-3 py-2 text-sm">Limpar</button>
+        <button id="dlgHistoryClose" class="btn-secondary rounded-lg px-2 py-1 text-sm">Fechar</button>
       </div>
     </div>
     <div class="p-5">
@@ -443,7 +435,21 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    // ========= Utils =========
+    // ========= TEMA ESCURO/CLARO =========
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-theme', savedTheme);
+      
+      const themeToggle = document.getElementById('themeToggle');
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = document.body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+      });
+    }
+
+    // ========= UTILS =========
     const el = (id) => document.getElementById(id);
     const onlyDigits = (s) => (s || '').replace(/\D+/g, '');
     const BR_PREFIX = '55';
@@ -465,7 +471,7 @@
       if (!historyList) return;
       historyList.innerHTML = '';
       if (ACTION_HISTORY.length === 0) {
-        historyList.innerHTML = '<li class="text-gray-500 text-center py-4">Nenhuma ação registrada ainda.</li>';
+        historyList.innerHTML = '<li class="text-center py-4 opacity-70">Nenhuma ação registrada ainda.</li>';
         return;
       }
       ACTION_HISTORY.forEach(item => {
@@ -474,9 +480,9 @@
         li.innerHTML = `
           <div class="flex justify-between">
             <span class="font-medium">${escapeHtml(item.action)}</span>
-            <span class="text-xs text-gray-500">${item.timestamp}</span>
+            <span class="text-xs opacity-70">${item.timestamp}</span>
           </div>
-          <div class="text-xs text-gray-600 mt-1">${escapeHtml(item.details)}</div>
+          <div class="text-xs opacity-70 mt-1">${escapeHtml(item.details)}</div>
         `;
         historyList.appendChild(li);
       });
@@ -488,33 +494,6 @@
       toast.className = `toast ${type}`;
       setTimeout(() => toast.classList.add('show'), 10);
       setTimeout(() => toast.classList.remove('show'), duration);
-    }
-
-    function createBackup() {
-      const backupData = { 
-        lista: LIST, 
-        template: el('template').value, 
-        templateEnc: el('templateEnc').value, 
-        timestamp: Date.now() 
-      };
-      localStorage.setItem('backup_data', JSON.stringify(backupData));
-    }
-
-    function restoreBackup() {
-      try {
-        const backupData = JSON.parse(localStorage.getItem('backup_data') || '{}');
-        if (backupData.lista && backupData.template) {
-          LIST = backupData.lista;
-          el('template').value = backupData.template;
-          el('templateEnc').value = backupData.templateEnc || defaultEncTemplate();
-          save(); 
-          render();
-          showToast('Backup restaurado com sucesso', 'success');
-          addToHistory('Backup restaurado', 'Dados restaurados do backup automático');
-        }
-      } catch (e) { 
-        console.error('Erro ao restaurar backup:', e); 
-      }
     }
 
     function ensureBR(msisdn){
@@ -613,7 +592,7 @@ Se precisar tirar dúvidas, pode responder por aqui. Estamos à disposição. �
 Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
     }
 
-    // ========= Estado =========
+    // ========= ESTADO =========
     let LIST = [];
     const CARROS = ['51', '84', '30', '96', '97', 'argo', 'motoboy'];
     let PREVIEW_ROW = null;
@@ -624,7 +603,6 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         localStorage.setItem('lista_envio_whats_webonly', JSON.stringify(LIST));
         localStorage.setItem('tpl_envio_whats_webonly', el('template').value);
         localStorage.setItem('tpl_enc_whats_webonly', el('templateEnc').value);
-        createBackup();
       } catch (e) { 
         showToast('Erro ao salvar dados', 'error'); 
         console.error(e); 
@@ -636,7 +614,6 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         LIST = JSON.parse(localStorage.getItem('lista_envio_whats_webonly') || '[]') || []; 
       } catch { 
         LIST = []; 
-        restoreBackup(); 
       }
       
       try { 
@@ -651,7 +628,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       renderHistory();
     }
 
-    // ========= WA =========
+    // ========= WHATSAPP =========
     function buildWAUrl(numero, msg) { 
       const enc = encodeURIComponent((msg && msg.trim()) ? msg : ' '); 
       return `https://web.whatsapp.com/send?phone=${numero}&text=${enc}`; 
@@ -716,17 +693,17 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       showToast(`Encerramento enviado para ${row.nome}`, 'success');
     }
 
-    // ========= Status chips =========
+    // ========= STATUS CHIPS =========
     function statusChips(row) {
       const envio = row.sentNotifyAt
-        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 status-chip">Envio ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentNotifyAt)}</span></span>`
-        : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip">Envio pendente</span>`;
+        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 status-chip dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-800">Envio ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentNotifyAt)}</span></span>`
+        : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">Envio pendente</span>`;
         
       const retorno = row.sentCloseAt
-        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 status-chip">Retorno ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentCloseAt)}</span></span>`
+        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200 status-chip dark:bg-indigo-900/30 dark:text-indigo-300 dark:ring-indigo-800">Retorno ✓ <span class='ml-1 opacity-70'>${fromNow(row.sentCloseAt)}</span></span>`
         : (row.sentNotifyAt
-          ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200 status-chip">Retorno pendente</span>`
-          : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip">Retorno —</span>`);
+          ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200 status-chip dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-800">Retorno pendente</span>`
+          : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200 status-chip dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">Retorno —</span>`);
           
       return `<div class="flex flex-wrap gap-1">${envio}${retorno}</div>`;
     }
@@ -735,7 +712,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); 
     }
 
-    // ========= Render por carro =========
+    // ========= RENDER POR CARRO =========
     function renderCarroSection(carro) {
       const carroId = carro.toLowerCase().replace(/\s+/g, '-');
       const carroRows = LIST.filter(r => r.carro === carro);
@@ -768,7 +745,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       if (!section) {
         section = document.createElement('div');
         section.id = `carro-${carroId}`;
-        section.className = 'bg-white rounded-2xl card-shadow p-6 fade-in carro-section';
+        section.className = 'card rounded-2xl p-6 fade-in carro-section';
         el('lista-carros').appendChild(section);
       }
       
@@ -776,14 +753,14 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
 
       section.innerHTML = `
         <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
-          <h2 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+          <h2 class="font-bold text-lg flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
             ${displayName}
           </h2>
           <div class="flex items-center gap-2 flex-wrap ml-auto">
-            <span id="resumo-${carroId}" class="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg font-medium">
+            <span id="resumo-${carroId}" class="text-xs bg-opacity-20 px-3 py-1.5 rounded-lg font-medium">
               ${filteredRows.length} ${filteredRows.length === 1 ? 'item' : 'itens'}
             </span>
           </div>
@@ -795,19 +772,19 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
           </button>
         </div>
 
-        <div class="mt-4 overflow-x-auto relative rounded-xl border border-gray-200">
+        <div class="mt-4 overflow-x-auto relative rounded-xl border border-opacity-20">
           <table class="min-w-full text-sm table-auto">
             <thead>
-              <tr class="bg-gray-50 text-gray-700 border-b border-gray-200">
+              <tr class="bg-opacity-20 border-b border-opacity-20">
                 <th class="p-3 text-left font-semibold">Nome</th>
                 <th class="p-3 text-left font-semibold">Telefone</th>
                 <th class="p-3 text-left font-semibold">Chamado</th>
                 <th class="p-3 text-left font-semibold">Previsto</th>
                 <th class="p-3 text-left font-semibold">Status</th>
-                <th class="p-3 text-left font-semibold sticky-actions">Ações</th>
+                <th class="p-3 text-left font-semibold">Ações</th>
               </tr>
             </thead>
-            <tbody id="tbody-${carroId}" class="align-top drop-zone" data-carro="${carro}"></tbody>
+            <tbody id="tbody-${carroId}" class="align-top" data-carro="${carro}"></tbody>
           </table>
         </div>
       `;
@@ -818,101 +795,29 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       for (const row of filteredRows) {
         const { hora, minutos, minsNum } = parseETA(row.etaRaw);
         const resumoPrev = hora 
-          ? `<span class='font-medium'>${hora}</span> <span class='text-gray-500 text-xs'>(${minutos})</span>` 
-          : '<span class="text-gray-400 text-xs">—</span>';
+          ? `<span class='font-medium'>${hora}</span> <span class='opacity-70 text-xs'>(${minutos})</span>` 
+          : '<span class="opacity-40 text-xs">—</span>';
 
-        // Linha RESUMO (draggable + ações + STATUS visível)
+        // Linha RESUMO
         const tr = document.createElement('tr');
-        tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 row-summary';
+        tr.className = 'border-b border-opacity-10 hover:bg-opacity-10 transition-colors duration-150 row-summary';
         tr.dataset.id = row.id;
-        tr.setAttribute('draggable', 'true');
         tr.innerHTML = `
           <td class="p-3 font-medium">${highlightText(row.nome, SEARCH_TERM)}</td>
           <td class="p-3 mono">${highlightText(maskPhone(row.telefone), SEARCH_TERM)}</td>
           <td class="p-3">${highlightText(row.chamado || '', SEARCH_TERM)}</td>
           <td class="p-3">${resumoPrev}</td>
           <td class="p-3 min-w-[220px]">${statusChips(row)}</td>
-          <td class="p-3 sticky-actions">
+          <td class="p-3">
             <div class="flex flex-wrap gap-2 justify-end">
               <button class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors duration-150" data-act="send" data-id="${row.id}">Enviar</button>
               <button class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-150" data-act="close" data-id="${row.id}">Encerrar</button>
-              <button class="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 bg-white hover:bg-red-50 transition-colors duration-150" data-act="del" data-id="${row.id}">Remover</button>
+              <button class="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 bg-white hover:bg-red-50 transition-colors duration-150 dark:bg-red-900/20 dark:border-red-700 dark:hover:bg-red-900/30" data-act="del" data-id="${row.id}">Remover</button>
             </div>
           </td>
         `;
         tbody.appendChild(tr);
-
-        // Linha DETALHES (expandida)
-        const trDet = document.createElement('tr');
-        trDet.className = 'bg-white';
-        trDet.innerHTML = `
-          <td class="p-0" colspan="6">
-            <div class="row-expand" id="expand-${row.id}" aria-hidden="true">
-              <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-t">
-                <div>
-                  <div class="text-xs text-gray-500 mb-1">Serviço</div>
-                  <div class="text-sm">${highlightText(row.servico || '—', SEARCH_TERM)}</div>
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 mb-1">Técnico</div>
-                  <div class="text-sm">${highlightText(row.tecnico || '—', SEARCH_TERM)}</div>
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 mb-1">Status</div>
-                  <div class="text-sm">${statusChips(row)}</div>
-                </div>
-
-                <div class="md:col-span-3">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Tempo previsto (antes do envio)</label>
-                  <div class="flex gap-2 items-center">
-                    <input type="text" class="rounded-lg border px-3 py-2 w-40" placeholder="45m ou 16:30"
-                           data-act="edit-eta" data-id="${row.id}" value="${escapeHtml(row.etaRaw || '')}">
-                    <span class="text-sm text-gray-600" id="eta-info-${row.id}">
-                      ${hora ? `Chega às <b>${hora}</b> (faltam <b>${minsNum}</b> min)` : '—'}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="md:col-span-3">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
-                  <textarea rows="4" class="w-full rounded-lg border border-gray-300 p-3 break-words focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200" data-act="edit-msg" data-id="${row.id}">${escapeHtml(getRowMessage(row, false))}</textarea>
-                  <div class="text-xs text-gray-500 mt-1">Dica: marque o horário na modal de envio para inserir {{hora}} e {{minutos}}.</div>
-                </div>
-              </div>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(trDet);
-
-        // Event listeners para a linha
-        tr.addEventListener('click', () => toggleExpand(row.id, true));
-        tr.addEventListener('dblclick', () => toggleExpand(row.id, false));
-
-        // Drag & drop
-        tr.addEventListener('dragstart', (ev) => onDragStart(ev, row));
-        tr.addEventListener('dragend', onDragEnd);
-        tr.addEventListener('dragover', onDragOverRow);
-        tr.addEventListener('drop', (ev) => onDropOnRow(ev, carro));
       }
-
-      // Event listeners para o tbody
-      tbody.addEventListener('dragover', onDragOverTbody);
-      tbody.addEventListener('drop', (ev) => onDropOnTbody(ev, carro));
-    }
-
-    function toggleExpand(id, expand = true) {
-      const pane = el(`expand-${id}`);
-      if (!pane) return;
-      const current = pane.getAttribute('aria-hidden') === 'false';
-      if (expand && !current) { 
-        pane.setAttribute('aria-hidden', 'false'); 
-        return; 
-      }
-      if (!expand && current) { 
-        pane.setAttribute('aria-hidden', 'true'); 
-        return; 
-      }
-      pane.setAttribute('aria-hidden', current ? 'true' : 'false');
     }
 
     function render() {
@@ -920,7 +825,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       CARROS.forEach(renderCarroSection);
     }
 
-    // ========= Ações =========
+    // ========= AÇÕES =========
     function addRow() {
       const nome = el('nome').value.trim(); 
       let telefone = ensureBR(el('telefone').value);
@@ -1033,7 +938,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       dlg.showModal();
     }
 
-    // ========= Excel =========
+    // ========= EXCEL =========
     function exportXLSX() {
       const header = ['id', 'nome', 'telefone', 'carro', 'etaRaw', 'servico', 'chamado', 'tecnico', 'msg', 'sentNotifyAt', 'sentCloseAt'];
       const data = LIST.map(r => ({
@@ -1101,246 +1006,7 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       reader.readAsArrayBuffer(file);
     }
 
-    // ========= Drag & Drop =========
-    let DRAG_ROW_ID = null;
-    
-    function onDragStart(ev, row) {
-      DRAG_ROW_ID = row.id;
-      ev.dataTransfer.setData('text/plain', row.id);
-      ev.dataTransfer.effectAllowed = 'move';
-      ev.currentTarget.classList.add('dragging');
-    }
-    
-    function onDragEnd(ev) {
-      ev.currentTarget.classList.remove('dragging');
-      document.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
-    }
-    
-    function onDragOverRow(ev) {
-      ev.preventDefault();
-      ev.dataTransfer.dropEffect = 'move';
-      const tr = ev.currentTarget;
-      tr.classList.add('drop-target');
-    }
-    
-    function onDropOnRow(ev, targetCarro) {
-      ev.preventDefault();
-      const targetTr = ev.currentTarget;
-      targetTr.classList.remove('drop-target');
-      
-      const targetId = targetTr.dataset.id;
-      const dragId = DRAG_ROW_ID || ev.dataTransfer.getData('text/plain');
-      if (!dragId || dragId === targetId) return;
-
-      const dragIndex = LIST.findIndex(r => r.id === dragId);
-      const targetIndex = LIST.findIndex(r => r.id === targetId);
-      if (dragIndex < 0 || targetIndex < 0) return;
-
-      LIST[dragIndex].carro = targetCarro;
-
-      const [dragItem] = LIST.splice(dragIndex, 1);
-      const newTargetIndex = LIST.findIndex(r => r.id === targetId);
-      LIST.splice(newTargetIndex, 0, dragItem);
-
-      save();
-      render();
-      addToHistory('Item movido', `${dragItem.nome} ➜ ${targetCarro}`);
-    }
-    
-    function onDragOverTbody(ev) {
-      ev.preventDefault();
-      ev.dataTransfer.dropEffect = 'move';
-      ev.currentTarget.classList.add('drop-target');
-    }
-    
-    function onDropOnTbody(ev, targetCarro) {
-      ev.preventDefault();
-      const tbody = ev.currentTarget;
-      tbody.classList.remove('drop-target');
-      
-      const dragId = DRAG_ROW_ID || ev.dataTransfer.getData('text/plain');
-      if (!dragId) return;
-      
-      const dragIndex = LIST.findIndex(r => r.id === dragId);
-      if (dragIndex < 0) return;
-      
-      const [dragItem] = LIST.splice(dragIndex, 1);
-      dragItem.carro = targetCarro;
-      
-      let lastIndexSameCar = -1;
-      for (let i = 0; i < LIST.length; i++) {
-        if (LIST[i].carro === targetCarro) lastIndexSameCar = i;
-      }
-      LIST.splice(lastIndexSameCar + 1, 0, dragItem);
-
-      save();
-      render();
-      addToHistory('Item movido', `${dragItem.nome} ➜ ${targetCarro} (final da lista)`);
-    }
-
-    // ========= Integração Airtable =========
-    async function testAirtableConnection() {
-      try {
-        const baseId = el('airtableBaseId').value.trim();
-        const apiKey = el('airtableApiKey').value.trim();
-        
-        if (!baseId || !apiKey) {
-          el('airtableStatus').innerHTML = 'Status: <span class="text-red-600">Base ID e API Key necessários</span>';
-          return false;
-        }
-        
-        // Testar com a tabela específica do seu embed
-        const url = `https://api.airtable.com/v0/${baseId}/shraujmqX1hJJ53dY`;
-        
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          el('airtableStatus').innerHTML = `Status: <span class="text-green-600">✅ Conectado! ${data.records?.length || 0} registros encontrados</span>`;
-          return true;
-        } else {
-          el('airtableStatus').innerHTML = 'Status: <span class="text-red-600">❌ Erro na conexão</span>';
-          return false;
-        }
-        
-      } catch (error) {
-        el('airtableStatus').innerHTML = 'Status: <span class="text-red-600">❌ Erro: ' + error.message + '</span>';
-        return false;
-      }
-    }
-
-    async function pullFromAirtable() {
-      try {
-        const baseId = el('airtableBaseId').value.trim();
-        const apiKey = el('airtableApiKey').value.trim();
-        
-        if (!baseId || !apiKey) {
-          showToast('Configure Base ID e API Key do Airtable', 'error');
-          return [];
-        }
-        
-        // Usar a tabela específica do seu embed
-        const url = `https://api.airtable.com/v0/${baseId}/shraujmqX1hJJ53dY`;
-        
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!response.ok) throw new Error('Falha ao buscar dados do Airtable');
-        
-        const data = await response.json();
-        
-        // Converter formato Airtable para nosso sistema
-        const records = data.records.map(record => ({
-          id: record.id,
-          nome: record.fields.Nome || record.fields['Nome do cliente'] || '',
-          telefone: record.fields.Telefone || record.fields.WhatsApp || '',
-          carro: record.fields.Carro || record.fields.Veículo || '',
-          servico: record.fields.Servico || record.fields.Serviço || '',
-          chamado: record.fields.Chamado || record.fields.OS || '',
-          tecnico: record.fields.Tecnico || record.fields.Técnico || '',
-          etaRaw: record.fields.Previsao || record.fields.Previsão || record.fields.ETA || '',
-          status: record.fields.Status || 'Pendente',
-          sentNotifyAt: (record.fields.Status && record.fields.Status.includes('Enviado')) ? Date.now() - 3600000 : undefined,
-          sentCloseAt: (record.fields.Status && record.fields.Status.includes('Finalizado')) ? Date.now() - 7200000 : undefined
-        })).filter(record => record.nome && record.telefone && record.carro);
-        
-        return records;
-        
-      } catch (error) {
-        console.error('Erro Airtable:', error);
-        showToast('Erro ao buscar do Airtable: ' + error.message, 'error');
-        return [];
-      }
-    }
-
-    async function pushToAirtable() {
-      try {
-        const baseId = el('airtableBaseId').value.trim();
-        const apiKey = el('airtableApiKey').value.trim();
-        
-        if (!baseId || !apiKey) {
-          showToast('Configure Base ID e API Key do Airtable', 'error');
-          return;
-        }
-        
-        const url = `https://api.airtable.com/v0/${baseId}/shraujmqX1hJJ53dY`;
-        
-        // Preparar dados para enviar
-        const records = LIST.map(item => ({
-          fields: {
-            'Nome': item.nome,
-            'Telefone': item.telefone,
-            'Carro': item.carro,
-            'Servico': item.servico || '',
-            'Chamado': item.chamado || '',
-            'Tecnico': item.tecnico || '',
-            'Previsao': item.etaRaw || '',
-            'Status': item.sentCloseAt ? 'Finalizado' : 
-                     item.sentNotifyAt ? 'Enviado' : 'Pendente'
-          }
-        }));
-        
-        // Enviar em lotes de 10 (limitação Airtable)
-        for (let i = 0; i < records.length; i += 10) {
-          const batch = records.slice(i, i + 10);
-          
-          const response = await fetch(url, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-              records: batch,
-              typecast: true
-            })
-          });
-          
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || 'Falha ao enviar dados');
-          }
-        }
-        
-        showToast('Dados sincronizados com Airtable!', 'success');
-        addToHistory('Airtable sincronizado', `${LIST.length} registros enviados`);
-        
-      } catch (error) {
-        console.error('Erro Airtable:', error);
-        showToast('Erro ao enviar para Airtable: ' + error.message, 'error');
-      }
-    }
-
-    // ========= Funções de Integração =========
-    async function pullFromGoogleSheet() {
-      showToast('Buscando dados do Airtable...', 'info');
-      const records = await pullFromAirtable();
-      if (records.length > 0) {
-        LIST = records;
-        save();
-        render();
-        showToast(`Dados carregados do Airtable: ${records.length} registros`, 'success');
-        addToHistory('Airtable carregado', `${records.length} registros importados`);
-      } else {
-        showToast('Nenhum dado encontrado no Airtable', 'info');
-      }
-    }
-
-    async function pushToGoogleSheet() {
-      showToast('Enviando dados para Airtable...', 'info');
-      await pushToAirtable();
-    }
-
-    // ========= Listeners =========
+    // ========= EVENT LISTENERS =========
     document.addEventListener('click', (e) => {
       const t = e.target;
       const act = t.dataset.act;
@@ -1361,36 +1027,6 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
       if (act === 'del') {
         const id = t.dataset.id;
         delRow(id);
-      }
-    });
-
-    document.addEventListener('input', (e) => {
-      const t = e.target;
-      
-      if (t.dataset.act === 'edit-msg') {
-        const id = t.dataset.id;
-        const row = LIST.find(r => r.id === id);
-        if (row) {
-          row.msg = t.value;
-          save();
-        }
-      }
-      
-      if (t.dataset.act === 'edit-eta') {
-        const id = t.dataset.id;
-        const row = LIST.find(r => r.id === id);
-        if (row) {
-          row.etaRaw = t.value.trim();
-          const info = parseETA(row.etaRaw);
-          const span = el(`eta-info-${id}`);
-          if (span) {
-            span.innerHTML = info.hora 
-              ? `Chega às <b>${info.hora}</b> (faltam <b>${info.minsNum}</b> min)` 
-              : '—';
-          }
-          save();
-          render();
-        }
       }
     });
 
@@ -1490,18 +1126,55 @@ Agradecemos a confiança. Qualquer dúvida, conte com a gente. 🙏`;
         : '—';
     });
 
-    // Integração Airtable
-    el('btnPullAirtable').addEventListener('click', pullFromGoogleSheet);
-    el('btnPushAirtable').addEventListener('click', pushToGoogleSheet);
-    el('btnTestAirtable').addEventListener('click', testAirtableConnection);
+    // Botão "Abrir WhatsApp" - CORREÇÃO
+    el('dlgSendConfirm').addEventListener('click', () => {
+      if (!PREVIEW_ROW) return;
+      
+      // Atualizar o ETA do preview row
+      PREVIEW_ROW.etaRaw = el('dlgSendEta').value.trim();
+      
+      // Obter a mensagem atualizada
+      const incluirHora = el('dlgSendHora').checked;
+      const mensagemFinal = el('dlgSendMsg').value.trim();
+      
+      // Se a mensagem foi editada manualmente, usar ela, senão gerar da template
+      const mensagemParaEnviar = mensagemFinal || getRowMessage(PREVIEW_ROW, incluirHora);
+      
+      // Salvar a mensagem editada no registro
+      if (mensagemFinal) {
+        PREVIEW_ROW.msg = mensagemFinal;
+      }
+      
+      save();
+      
+      // Abrir WhatsApp
+      const numero = ensureBR(PREVIEW_ROW.telefone);
+      const url = buildWAUrl(numero, mensagemParaEnviar);
+      openURL(url);
+      
+      // Marcar como enviado
+      PREVIEW_ROW.sentNotifyAt = Date.now();
+      save();
+      render();
+      
+      // Fechar modal e mostrar feedback
+      el('dlgSend').close();
+      addToHistory('Notificação enviada', `Para ${PREVIEW_ROW.nome} (${maskPhone(PREVIEW_ROW.telefone)})`);
+      showToast(`Notificação enviada para ${PREVIEW_ROW.nome}`, 'success');
+    });
 
-    // Start
-    load();
+    // ========= INICIALIZAÇÃO =========
+    function init() {
+      initTheme();
+      load();
+    }
 
-    // Testar conexão automaticamente ao carregar
-    setTimeout(() => {
-      testAirtableConnection();
-    }, 1000);
+    // Iniciar quando o DOM estiver carregado
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
